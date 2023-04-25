@@ -1,0 +1,18 @@
+batch_size: 64
+hid_dim: 256
+lr: 0.003
+wd: !!float 1e-4
+n_layers: 2
+dropout: [0.2, 0.1]
+device: "cuda:0"
+early_stopping: 10
+n_fold: 5
+seed: 2023
+max_epochs: 15
+gated: True
+dataset: S-FFSD
+test_size: 0.6
+nei_att_heads:
+    yelp: 4
+    amazon: 5
+    S-FFSD: 9

@@ -1,0 +1,13 @@
+dataset: S-FFSD
+
+trainfeature: data/trf_2d.npy
+trainlabel: data/trl_2d.npy
+testfeature: data/tef_2d.npy
+testlabel: data/tel_2d.npy
+
+test_size: 0.2
+
+epochs: 30
+batch_size: 512
+lr: 0.001
+device: cpu
