@@ -1,7 +1,6 @@
 import os
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from config import Config
-from data import trans_to_graph
 from feature_engineering.data_engineering import data_engineer_benchmark, span_data_2d
 import logging
 import numpy as np
@@ -106,7 +105,6 @@ def main(args):
             g,
             mode='2d',
             epochs=args['epochs'],
-            batch_size=args['batch_size'],
             attention_hidden_dim=args['attention_hidden_dim'],
             lr=args['lr'],
             device=args['device']
