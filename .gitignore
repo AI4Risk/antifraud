@@ -3,7 +3,7 @@ venv
 antifraud.egg-info
 dist
 data/*
-!data/S-FFSD.csv
+!data/S-FFSD.zip
 !data/YelpChi.zip
 !data/Amazon.zip
 
