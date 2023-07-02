@@ -1,4 +1,7 @@
 # AntiFraud
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/semi-supervised-credit-card-fraud-detection/fraud-detection-on-amazon-fraud)](https://paperswithcode.com/sota/fraud-detection-on-amazon-fraud?p=semi-supervised-credit-card-fraud-detection)
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/semi-supervised-credit-card-fraud-detection/fraud-detection-on-yelp-fraud)](https://paperswithcode.com/sota/fraud-detection-on-yelp-fraud?p=semi-supervised-credit-card-fraud-detection)
+
 A Financial Fraud Detection Framework.
 
 Source codes implementation of papers:
@@ -78,7 +81,7 @@ The performance of five models tested on three datasets are listed as follows:
 |STAN|- |- | -| -| -| -|0.7422|0.6698|0.3324|
 |STAGN|- |- | -| -| -| -|0.7659|0.6852|0.3599|
 |GTAN|0.9241|0.7988|0.7513|0.9630|0.9213|0.8838|0.8286|0.7336|0.6585|
-|RGTAN|0.9498|0.8492|0.8241|0.9705|0.9198|0.8925|0.8461|0.7513|0.6939|
+|RGTAN|0.9498|0.8492|0.8241|0.9750|0.9200|0.8926|0.8461|0.7513|0.6939|
 
 > `MCNN`, `STAN` and `STAGN` are presently not applicable to YelpChi and Amazon datasets.
 
