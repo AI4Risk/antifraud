@@ -20,27 +20,9 @@ def to_pred(logits: torch.Tensor) -> list:
     return pred.numpy().tolist()
 
 
-def stagn_train_2d(
-    features,
-    labels,
-    train_idx,
-    test_idx,
-    g,
-    num_classes: int = 2,
-    epochs: int = 18,
-    attention_hidden_dim: int = 150,
-    lr: float = 3e-3,
-    device: str = "cpu"
-):
+def stagn_train_2d(features, labels, train_idx, test_idx, g, num_classes: int = 2, epochs: int = 18, attention_hidden_dim: int = 150, lr: float = 3e-3, device: str = "cpu"):
     g = g.to(device)
-    model = stagn_2d_model(
-        time_windows_dim=features.shape[2],
-        feat_dim=features.shape[1],
-        num_classes=num_classes,
-        attention_hidden_dim=attention_hidden_dim,
-        g=g,
-        device=device
-    )
+    model = stagn_2d_model(time_windows_dim=features.shape[2], feat_dim=features.shape[1], num_classes=num_classes, attention_hidden_dim=attention_hidden_dim, g=g, device=device)
     model.to(device)
 
     features = torch.from_numpy(features).to(device)
@@ -48,7 +30,7 @@ def stagn_train_2d(
     labels = torch.from_numpy(labels).to(device)
 
     unique_labels, counts = torch.unique(labels, return_counts=True)
-    weights = (1 / counts)*len(labels)/len(unique_labels)
+    weights = (1 / counts) * len(labels) / len(unique_labels)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     loss_func = torch.nn.CrossEntropyLoss(weights)
@@ -71,8 +53,7 @@ def stagn_train_2d(
         pred = to_pred(out[test_idx])
         true = labels[test_idx].cpu().numpy()
         pred = np.array(pred)
-        print(
-            f"test set | auc: {roc_auc_score(true, pred):.4f}, F1: {f1_score(true, pred, average='macro'):.4f}, AP: {average_precision_score(true, pred):.4f}")
+        print(f"test set | auc: {roc_auc_score(true, pred):.4f}, F1: {f1_score(true, pred, average='macro'):.4f}, AP: {average_precision_score(true, pred):.4f}")
 
 
 def stagn_main(
@@ -86,22 +67,11 @@ def stagn_main(
     lr: float = 0.003,
     device="cpu",
 ):
-    train_idx, test_idx = train_test_split(
-        np.arange(features.shape[0]), test_size=test_ratio)
+    train_idx, test_idx = train_test_split(np.arange(features.shape[0]), test_size=test_ratio)
 
     # y_pred = np.zeros(shape=test_label.shape)
     if mode == "2d":
-        stagn_train_2d(
-            features,
-            labels,
-            train_idx,
-            test_idx,
-            g,
-            epochs=epochs,
-            attention_hidden_dim=attention_hidden_dim,
-            lr=lr,
-            device=device
-        )
+        stagn_train_2d(features, labels, train_idx, test_idx, g, epochs=epochs, attention_hidden_dim=attention_hidden_dim, lr=lr, device=device)
     else:
         raise NotImplementedError("Not supported mode.")
 
@@ -114,8 +84,7 @@ def load_stagn_data(args: dict):
     method = args['method']
     # ICONIP16 & AAAI20 requires higher dimensional data
     if os.path.exists("data/features.npy"):
-        features, labels = np.load(
-            "data/features.npy"), np.load("data/labels.npy")
+        features, labels = np.load("data/features.npy"), np.load("data/labels.npy")
     else:
         features, labels = span_data_2d(feat_df)
         np.save("data/features.npy", features)
@@ -124,19 +93,16 @@ def load_stagn_data(args: dict):
     sampled_df = feat_df[feat_df['Labels'] != 2]
     sampled_df = sampled_df.reset_index(drop=True)
 
-    source_enc = LabelEncoder()
-    encoded_source = source_enc.fit_transform(sampled_df['Source'])
-    tgt_enc = LabelEncoder()
-    encoded_tgt = tgt_enc.fit_transform(sampled_df['Target'])
+    all_nodes = pd.concat([sampled_df['Source'], sampled_df['Target']]).unique()
+    encoder = LabelEncoder().fit(all_nodes)
+    encoded_source = encoder.transform(sampled_df['Source'])
+    encoded_tgt = encoder.transform(sampled_df['Target'])
 
     loc_enc = OneHotEncoder()
-    loc_feature = np.array(loc_enc.fit_transform(
-        sampled_df['Location'].to_numpy()[:, np.newaxis]).todense())
-    loc_feature = np.hstack(
-        [zscore(sampled_df['Amount'].to_numpy())[:, np.newaxis], loc_feature])
+    loc_feature = np.array(loc_enc.fit_transform(sampled_df['Location'].to_numpy()[:, np.newaxis]).todense())
+    loc_feature = np.hstack([zscore(sampled_df['Amount'].to_numpy())[:, np.newaxis], loc_feature])
 
     g = dgl.DGLGraph()
-    g.add_edges(encoded_source, encoded_tgt, data={
-                "feat": torch.from_numpy(loc_feature).to(torch.float32)})
+    g.add_edges(encoded_source, encoded_tgt, data={"feat": torch.from_numpy(loc_feature).to(torch.float32)})
     # g = dgl.add_self_loop(g)
     return features, labels, g
