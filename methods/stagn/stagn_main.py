@@ -124,10 +124,10 @@ def load_stagn_data(args: dict):
     sampled_df = feat_df[feat_df['Labels'] != 2]
     sampled_df = sampled_df.reset_index(drop=True)
 
-    source_enc = LabelEncoder()
-    encoded_source = source_enc.fit_transform(sampled_df['Source'])
-    tgt_enc = LabelEncoder()
-    encoded_tgt = tgt_enc.fit_transform(sampled_df['Target'])
+    all_nodes = pd.concat([sampled_df['Source'], sampled_df['Target']]).unique()
+    encoder = LabelEncoder().fit(all_nodes)  
+    encoded_source = encoder.transform(sampled_df['Source'])
+    encoded_tgt = encoder.transform(sampled_df['Target'])  
 
     loc_enc = OneHotEncoder()
     loc_feature = np.array(loc_enc.fit_transform(

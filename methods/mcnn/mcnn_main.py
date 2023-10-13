@@ -72,7 +72,7 @@ def mcnn_main(
     batch_num_test = ceil(len(test_label) / batch_size)
     with torch.no_grad():
         pred = []
-        for batch in (range(batch_num)):
+        for batch in (range(batch_num_test)):
             optimizer.zero_grad()
             batch_mask = list(
                 range(batch*batch_size, min((batch+1)*batch_size, len(test_label))))
@@ -84,4 +84,3 @@ def mcnn_main(
         pred = np.array(pred)
         print(
             f"test set | auc: {roc_auc_score(true, pred):.4f}, F1: {f1_score(true, pred, average='macro'):.4f}, AP: {average_precision_score(true, pred):.4f}")
-
