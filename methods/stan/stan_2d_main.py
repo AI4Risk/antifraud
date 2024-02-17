@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import tqdm
 from math import floor, ceil
-from methods.stan.stan import stan_model
+from methods.stan.stan_2d import stan_2d_model
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, confusion_matrix, roc_auc_score, f1_score, average_precision_score
 
@@ -16,7 +16,8 @@ def to_pred(logits: torch.Tensor) -> list:
         pred = pred.argmax(dim=1)
     return pred.numpy().tolist()
 
-def att_train(
+
+def att_train_2d(
     x_train,
     y_train,
     x_test,
@@ -28,10 +29,9 @@ def att_train(
     lr: float = 3e-3,
     device: str = "cpu"
 ):
-    model = stan_model(
+    model = stan_2d_model(
         time_windows_dim=x_train.shape[1],
-        spatio_windows_dim=x_train.shape[2],
-        feat_dim=x_train.shape[3],
+        feat_dim=x_train.shape[2],
         num_classes=num_classes,
         attention_hidden_dim=attention_hidden_dim,
     )
@@ -110,7 +110,7 @@ def stan_main(
     train_label_dir,
     test_feature_dir,
     test_label_dir,
-    mode: str = "3d",
+    mode: str = "2d",
     num_classed: int = 2,
     epochs: int = 18,
     batch_size: int = 256,
@@ -120,16 +120,18 @@ def stan_main(
 ):
     train_feature = torch.from_numpy(np.load(train_feature_dir, allow_pickle=True)).to(
         dtype=torch.float32).to(device)
+    train_feature.transpose_(1, 2)
     train_label = torch.from_numpy(np.load(train_label_dir, allow_pickle=True)).to(
         dtype=torch.long).to(device)
     test_feature = torch.from_numpy(np.load(test_feature_dir, allow_pickle=True)).to(
         dtype=torch.float32).to(device)
+    test_feature.transpose_(1, 2)
     test_label = torch.from_numpy(np.load(test_label_dir, allow_pickle=True)).to(
         dtype=torch.long).to(device)
 
     # y_pred = np.zeros(shape=test_label.shape)
-    if mode == "3d":
-        att_train(
+    if mode == "2d":
+        att_train_2d(
             train_feature,
             train_label,
             test_feature,
