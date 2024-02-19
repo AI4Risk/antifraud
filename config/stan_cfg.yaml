@@ -1,9 +1,9 @@
 dataset: S-FFSD
 
-trainfeature: data/trf_2d.npy
-trainlabel: data/trl_2d.npy
-testfeature: data/tef_2d.npy
-testlabel: data/tel_2d.npy
+trainfeature: data/trf_3d.npy
+trainlabel: data/trl_3d.npy
+testfeature: data/tef_3d.npy
+testlabel: data/tel_3d.npy
 
 test_size: 0.2
 

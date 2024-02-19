@@ -70,17 +70,20 @@ class stan_2d_model(nn.Module):
         # split along time_windows axis
         input_att = torch.split(X, 1, dim=1)
         for index, x_i in enumerate(input_att):
+            # print(1, x_i.shape)
             x_i = x_i.reshape(-1, self.feat_dim)
+            # print(2, x_i.shape)
             c_i = self.attention(x_i, input_att, index)
-
+            # print(3, c_i.shape)
             inp = torch.concat([x_i, c_i], axis=1)
+            # print(4, inp.shape)
             self.output_att.append(inp)
 
         input_conv = torch.reshape(torch.concat(self.output_att, axis=1),
                                    [-1, self.time_windows_dim, self.feat_dim*2])
-
+        # print(5, input_conv.shape)
         self.input_conv_expanded = torch.unsqueeze(input_conv, 1)
-
+        # print(6, self.input_conv_expanded.shape)
         return self.input_conv_expanded
 
     def cnn_layer(
@@ -109,8 +112,9 @@ class stan_2d_model(nn.Module):
                 x_i, self.attention_W), torch.matmul(output, self.attention_U)))
             e_i_j = torch.matmul(att_hidden, self.attention_V)
             e_i.append(e_i_j)
-
+        # print(7, e_i[0].shape)
         e_i = torch.concat(e_i, axis=1)
+        # print(8, e_i.shape)
         # print(f"e_i shape: {e_i.shape}")
         alpha_i = F.softmax(e_i, dim=1)
         alpha_i = torch.split(alpha_i, 1, 1)  # !!!
@@ -122,9 +126,10 @@ class stan_2d_model(nn.Module):
                 output = output.reshape(-1, self.feat_dim)
                 c_i_j = torch.multiply(alpha_i_j, output)
                 c_i.append(c_i_j)
-
+        # print(9, c_i[0].shape)
         c_i = torch.reshape(torch.concat(c_i, axis=1),
                             [-1, self.time_windows_dim-1, self.feat_dim])
+        # print(10, c_i.shape)
         c_i = torch.sum(c_i, dim=1)
         return c_i
 
@@ -133,8 +138,10 @@ class stan_2d_model(nn.Module):
         out = self.attention_layer(X_nume)
 
         out = self.cnn_layer(out)
+        # print(out.shape)
         out = self.flatten(out)
-
+        # print(out.shape)
         out = self.linears(out)
-
+        # print(out.shape)
+        # quit()
         return out
