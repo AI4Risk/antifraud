@@ -54,7 +54,7 @@ def base_load_data(args: dict):
     method = args['method']
     # for ICONIP16 & AAAI20
     if args['method'] == 'stan':
-        if os.path.exists("data/tel.npy"):
+        if os.path.exists("data/tel_3d.npy"):
             return
         features, labels = span_data_3d(feat_df)
     else:

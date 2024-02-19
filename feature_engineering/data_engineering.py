@@ -51,7 +51,7 @@ def data_engineer_example(data_dir):
                     if (isnan(Avg_pur_amt)):
                         Avg_pur_amt = 0
                     data1.append([a_grant, Avg_grt_amt, Totl_grt_amt,
-                                 a_purch, Avg_pur_amt, Totl_pur_amt, Num])
+                                  a_purch, Avg_pur_amt, Totl_pur_amt, Num])
             else:
                 for length in time_span:
                     data1.append([0, 0, 0, 0, 0, 0, 0])
@@ -119,7 +119,7 @@ def data_engineer_benchmark(feat_df):
     for i, job in enumerate(jobs):
         post_fe_df.append(job.get())
         sys.stdout.flush()
-        sys.stdout.write("FE: {}/{}\r".format(i+1, num_job))
+        sys.stdout.write("FE: {}/{}\r".format(i + 1, num_job))
         sys.stdout.flush()
     post_fe_df = pd.concat(post_fe_df)
     post_fe_df = post_fe_df.fillna(0.)
@@ -127,7 +127,7 @@ def data_engineer_benchmark(feat_df):
 
 
 def calcu_trading_entropy(
-    data_2: pd.DataFrame
+        data_2: pd.DataFrame
 ) -> float:
     """calculate trading entropy of given data
     Args:
@@ -140,10 +140,10 @@ def calcu_trading_entropy(
         return 0
 
     amounts = np.array([data_2[data_2['Type'] == type]['Amount'].sum()
-                       for type in data_2['Type'].unique()])
+                        for type in data_2['Type'].unique()])
     proportions = amounts / amounts.sum() if amounts.sum() else np.ones_like(amounts)
-    ent = -np.array([proportion*np.log(1e-5 + proportion)
-                    for proportion in proportions]).sum()
+    ent = -np.array([proportion * np.log(1e-5 + proportion)
+                     for proportion in proportions]).sum()
     return ent
 
 
@@ -173,7 +173,7 @@ def span_data_2d(
             feature_of_one_timestamp = []
             prev_records = data.iloc[(row_idx - time_span):row_idx, :]
             prev_and_now_records = data.iloc[(
-                row_idx - time_span):row_idx + 1, :]
+                                                     row_idx - time_span):row_idx + 1, :]
             prev_records = prev_records[prev_records['Source'] == acct_no]
 
             # AvgAmountT
@@ -210,23 +210,33 @@ def span_data_2d(
 
     return nume_feature_ret.astype(np.float32), np.array(label_ret).astype(np.int64)
 
-#todo 添加空间维度特征
+
 def span_data_3d(
         data: pd.DataFrame,
-        time_windows: list = [1, 3, 5, 10, 20, 50, 100, 500],
-        spatio_windows: list = [1,3,5,10,20,50],
+        time_windows=None,
+        spatio_windows=None,
 ) -> np.ndarray:
     """transform transaction record into feature matrices
 
     Args:
-        df (pd.DataFrame): transaction records
+        data: df (pd.DataFrame): transaction records
         time_windows (list): feature generating time length
+        spatio_windows (list): feature generating spatio length:
 
     Returns:
         np.ndarray: (sample_num, |time_windows|, feat_num) transaction feature matrices
     """
+    if time_windows is None:
+        time_windows = [1, 3, 5, 10, 20, 50, 100, 500]
+    if spatio_windows is None:
+        spatio_windows = [1, 2, 3, 4,5]
     data = data[data['Labels'] != 2]
     data['Location'] = data['Location'].apply(lambda x: int(x.split('L')[1]))
+    data['Location'] = data['Location'].apply(lambda x: 1 if x == 100 else x)
+    data['Location'] = data['Location'].apply(lambda x: 2 if 102 >= x > 100 else x)
+    data['Location'] = data['Location'].apply(lambda x: 3 if 110 >= x > 102 else x)
+    data['Location'] = data['Location'].apply(lambda x: 4 if 140 >= x > 110 else x)
+    data['Location'] = data['Location'].apply(lambda x: 5 if x > 140 else x)
     # data = data[data['Amount'] != 0]
 
     nume_feature_ret, label_ret = [], []
@@ -239,7 +249,7 @@ def span_data_3d(
             feature_of_one_timestamp = []
             prev_records = data.iloc[(row_idx - time_span):row_idx, :]
             prev_and_now_records = data.iloc[(
-                row_idx - time_span):row_idx + 1, :]
+                                                     row_idx - time_span):row_idx + 1, :]
             prev_records = prev_records[prev_records['Source'] == acct_no]
 
             for spatio_span in spatio_windows:
@@ -276,4 +286,3 @@ def span_data_3d(
         len(data), len(time_windows), len(spatio_windows), 5), "output shape invalid."
 
     return nume_feature_ret.astype(np.float32), np.array(label_ret).astype(np.int64)
-
