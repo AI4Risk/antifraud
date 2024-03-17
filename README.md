@@ -109,7 +109,13 @@ scipy            1.7.3
 torch            1.12.1+cu113
 dgl-cu113        0.8.1
 ```
-## Citing
+
+### Contributors :
+<a href="https://github.com/AI4Risk/antifraud/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=AI4Risk/antifraud" />
+</a>
+
+### Citing
 
 If you find *Antifraud* is useful for your research, please consider citing the following papers:
 
