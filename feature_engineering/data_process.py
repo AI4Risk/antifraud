@@ -195,7 +195,7 @@ if __name__ == "__main__":
         Code partially from https://github.com/YingtongDou/CARE-GNN
     """
     print(f"processing YELP data...")
-    yelp = loadmat(os.path.join(DATADIR, 'YelpChi.mat'))
+    yelp = loadmat('../data/YelpChi.mat')
     net_rur = yelp['net_rur']
     net_rtr = yelp['net_rtr']
     net_rsr = yelp['net_rsr']
@@ -232,7 +232,7 @@ if __name__ == "__main__":
         For Amazon dataset
     """
     print(f"processing AMAZON data...")
-    amz = loadmat(os.path.join(DATADIR, 'Amazon.mat'))
+    amz = loadmat('../data/Amazon.mat'))
     net_upu = amz['net_upu']
     net_usu = amz['net_usu']
     net_uvu = amz['net_uvu']
