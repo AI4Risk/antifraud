@@ -201,20 +201,16 @@ if __name__ == "__main__":
     net_rsr = yelp['net_rsr']
     yelp_homo = yelp['homo']
 
-    sparse_to_adjlist(net_rur, os.path.join(
-        DATADIR, "yelp_rur_adjlists.pickle"))
-    sparse_to_adjlist(net_rtr, os.path.join(
-        DATADIR, "yelp_rtr_adjlists.pickle"))
-    sparse_to_adjlist(net_rtr, os.path.join(
-        DATADIR, "yelp_rsr_adjlists.pickle"))
-    sparse_to_adjlist(net_rtr, os.path.join(
-        DATADIR, "yelp_homo_adjlists.pickle"))
+    sparse_to_adjlist(net_rur, "../data/yelp_rur_adjlists.pickle")
+    sparse_to_adjlist(net_rtr, "../data/yelp_rtr_adjlists.pickle")
+    sparse_to_adjlist(net_rtr, "../data/yelp_rsr_adjlists.pickle")
+    sparse_to_adjlist(net_rtr, "../data/yelp_homo_adjlists.pickle")
 
     data_file = yelp
     labels = pd.DataFrame(data_file['label'].flatten())[0]
     feat_data = pd.DataFrame(data_file['features'].todense().A)
     # load the preprocessed adj_lists
-    with open(os.path.join(DATADIR, "yelp_homo_adjlists.pickle"), 'rb') as file:
+    with open("../data/yelp_homo_adjlists.pickle", 'rb') as file:
         homo = pickle.load(file)
     file.close()
     src = []
@@ -229,7 +225,7 @@ if __name__ == "__main__":
     g.ndata['label'] = torch.from_numpy(labels.to_numpy()).to(torch.long)
     g.ndata['feat'] = torch.from_numpy(
         feat_data.to_numpy()).to(torch.float32)
-    dgl.data.utils.save_graphs(DATADIR + "graph-yelp.bin", [g])
+    dgl.data.utils.save_graphs("../data/graph-yelp.bin", [g])
 
     # %%
     """
@@ -242,20 +238,16 @@ if __name__ == "__main__":
     net_uvu = amz['net_uvu']
     amz_homo = amz['homo']
 
-    sparse_to_adjlist(net_upu, os.path.join(
-        DATADIR, "amz_upu_adjlists.pickle"))
-    sparse_to_adjlist(net_usu, os.path.join(
-        DATADIR, "amz_usu_adjlists.pickle"))
-    sparse_to_adjlist(net_uvu, os.path.join(
-        DATADIR, "amz_uvu_adjlists.pickle"))
-    sparse_to_adjlist(amz_homo, os.path.join(
-        DATADIR, "amz_homo_adjlists.pickle"))
+    sparse_to_adjlist(net_upu, "../data/amz_upu_adjlists.pickle")
+    sparse_to_adjlist(net_usu, "../data/amz_usu_adjlists.pickle")
+    sparse_to_adjlist(net_uvu, "../data/amz_uvu_adjlists.pickle"))
+    sparse_to_adjlist(amz_homo, "../data/amz_homo_adjlists.pickle"))
 
     data_file = amz
     labels = pd.DataFrame(data_file['label'].flatten())[0]
     feat_data = pd.DataFrame(data_file['features'].todense().A)
     # load the preprocessed adj_lists
-    with open(DATADIR + 'amz_homo_adjlists.pickle', 'rb') as file:
+    with open('../data/amz_homo_adjlists.pickle', 'rb') as file:
         homo = pickle.load(file)
     file.close()
     src = []
@@ -270,18 +262,18 @@ if __name__ == "__main__":
     g.ndata['label'] = torch.from_numpy(labels.to_numpy()).to(torch.long)
     g.ndata['feat'] = torch.from_numpy(
         feat_data.to_numpy()).to(torch.float32)
-    dgl.data.utils.save_graphs(DATADIR + "graph-amazon.bin", [g])
+    dgl.data.utils.save_graphs("../data/graph-amazon.bin", [g])
 
     # # %%
     # """
     #     For S-FFSD dataset
     # """
     print(f"processing S-FFSD data...")
-    data = pd.read_csv(os.path.join(DATADIR, 'S-FFSD.csv'))
+    data = pd.read_csv('../data/S-FFSD.csv')
     data = featmap_gen(data.reset_index(drop=True))
     data.replace(np.nan, 0, inplace=True)
-    data.to_csv(os.path.join(DATADIR, 'S-FFSDneofull.csv'), index=None)
-    data = pd.read_csv(os.path.join(DATADIR, 'S-FFSDneofull.csv'))
+    data.to_csv('../data/S-FFSDneofull.csv', index=None)
+    data = pd.read_csv('../data/S-FFSDneofull.csv')
 
     data = data.reset_index(drop=True)
     out = []
@@ -314,13 +306,13 @@ if __name__ == "__main__":
         labels.to_numpy()).to(torch.long)
     g.ndata['feat'] = torch.from_numpy(
         feat_data.to_numpy()).to(torch.float32)
-    dgl.data.utils.save_graphs(DATADIR + "graph-S-FFSD.bin", [g])
+    dgl.data.utils.save_graphs("../data/graph-S-FFSD.bin", [g])
 
     # generate neighbor riskstat features
     for file_name in ['S-FFSD', 'yelp', 'amazon']:
         print(
             f"Generating neighbor risk-aware features for {file_name} dataset...")
-        graph = dgl.load_graphs(DATADIR + "graph-" + file_name + ".bin")[0][0]
+        graph = dgl.load_graphs("../data/graph-" + file_name + ".bin")[0][0]
         graph: dgl.DGLGraph
         print(f"graph info: {graph}")
 
@@ -341,7 +333,7 @@ if __name__ == "__main__":
         feat_names = origin_feat_name + feat_names
         features_neigh[np.isnan(features_neigh)] = 0.
 
-        output_path = DATADIR + file_name + "_neigh_feat.csv"
+        output_path = '../data/' + file_name + "_neigh_feat.csv"
         features_neigh = pd.DataFrame(features_neigh, columns=feat_names)
         scaler = StandardScaler()
         # features_neigh = np.log(features_neigh + 1)
