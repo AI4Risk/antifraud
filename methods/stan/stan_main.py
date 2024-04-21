@@ -102,7 +102,10 @@ def att_train(
         pred = np.array(pred)
         print(
             f"test set | auc: {roc_auc_score(true, pred):.4f}, F1: {f1_score(true, pred, average='macro'):.4f}, AP: {average_precision_score(true, pred):.4f}")
-        # print(confusion_matrix(true, pred))
+        print(confusion_matrix(true, pred))
+    
+    path = '/content/drive/My Drive/Spring 2024/Applied ML Cloud/SpatioTemporalFraud/stan_trained.pth'
+    torch.save(model.state_dict(), path)
 
 
 def stan_main(
