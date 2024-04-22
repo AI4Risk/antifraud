@@ -2,7 +2,7 @@ import os
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from config import Config
 from feature_engineering.data_engineering import data_engineer_benchmark, span_data_2d, span_data_3d
-from methods.stan.stan_main import stan_main
+from methods.stan.stan_main import stan_test, stan_train
 import logging
 import numpy as np
 import pandas as pd
@@ -58,7 +58,7 @@ def main(args):
     '''
 
     if args['mode'] == 'train':
-        train_stan(
+        stan_train(
             args['trainfeature'], 
             args['trainlabel'], 
             args['testfeature'],
@@ -73,7 +73,7 @@ def main(args):
         )
 
     elif args['mode'] == 'test':
-        test_stan(
+        stan_test(
             args['testfeature'],
             args['testlabel'],
             args['save_path'],
@@ -81,6 +81,7 @@ def main(args):
             epochs=args['epochs'],
             batch_size=args['batch_size'],
             attention_hidden_dim=args['attention_hidden_dim'],
+            lr=args['lr'],
             device=args['device'],
         )
 
@@ -89,9 +90,12 @@ if __name__ == "__main__":
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
                             conflict_handler='resolve')
     parser.add_argument("--mode", default=str, help="Mode to run the script in: 'train' or 'test'")
+    mode = vars(parser.parse_args())['mode']  # dict
+    print(mode)
 
     with open("config/stan_cfg.yaml") as file:
         args = yaml.safe_load(file)
     args['method'] = 'stan'
+    args['mode'] = mode
 
     main(args)

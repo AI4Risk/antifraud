@@ -106,7 +106,7 @@ def att_train(
             f"test set | auc: {roc_auc_score(true, pred):.4f}, F1: {f1_score(true, pred, average='macro'):.4f}, AP: {average_precision_score(true, pred):.4f}")
         print(confusion_matrix(true, pred))
 
-def train_stan(
+def stan_train(
     train_feature_dir,
     train_label_dir,
     test_feature_dir,
@@ -148,7 +148,7 @@ def train_stan(
         print(f"Model saved at {save_path}")
 
 
-def test_stan(
+def stan_test(
     test_feature_dir,
     test_label_dir,
     path: str,
@@ -157,6 +157,7 @@ def test_stan(
     epochs: int = 18,
     batch_size: int = 256,
     attention_hidden_dim: int = 150,
+    lr: float = 3e-3,
     device: str = "cpu",
 ):
     x_test = torch.from_numpy(np.load(test_feature_dir, allow_pickle=True)).to(
@@ -181,7 +182,9 @@ def test_stan(
     feats_test = x_test
     labels_test = y_test
 
-    batch_num_test = ceil(len(labels_test) / batch_size)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+
+    batch_num = ceil(len(labels_test) / batch_size)
     with torch.no_grad():
         pred = []
         for batch in range(batch_num):
