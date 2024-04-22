@@ -16,6 +16,8 @@ def to_pred(logits: torch.Tensor) -> list:
         pred = pred.argmax(dim=1)
     return pred.numpy().tolist()
 
+#def evaluate(model, x_test, y_test, batch_size: int = 256, device: str = "cpu"):
+
 def att_train(
     x_train,
     y_train,
@@ -103,23 +105,20 @@ def att_train(
         print(
             f"test set | auc: {roc_auc_score(true, pred):.4f}, F1: {f1_score(true, pred, average='macro'):.4f}, AP: {average_precision_score(true, pred):.4f}")
         print(confusion_matrix(true, pred))
-    
-    path = '/content/drive/My Drive/Spring 2024/Applied ML Cloud/SpatioTemporalFraud/stan_trained.pth'
-    torch.save(model.state_dict(), path)
 
-
-def stan_main(
+def train_stan(
     train_feature_dir,
     train_label_dir,
     test_feature_dir,
     test_label_dir,
+    save_path: str,
     mode: str = "3d",
-    num_classed: int = 2,
+    num_classes: int = 2,
     epochs: int = 18,
     batch_size: int = 256,
     attention_hidden_dim: int = 150,
-    lr: float = 0.003,
-    device="cpu",
+    lr: float = 3e-3,
+    device: str = "cpu"
 ):
     train_feature = torch.from_numpy(np.load(train_feature_dir, allow_pickle=True)).to(
         dtype=torch.float32).to(device)
@@ -143,3 +142,60 @@ def stan_main(
             lr=lr,
             device=device
         )
+
+    if save_path:
+        torch.save(model.state_dict(), save_path)
+        print(f"Model saved at {save_path}")
+
+
+def test_stan(
+    test_feature_dir,
+    test_label_dir,
+    path: str,
+    mode: str = "3d",
+    num_classes: int = 2,
+    epochs: int = 18,
+    batch_size: int = 256,
+    attention_hidden_dim: int = 150,
+    device: str = "cpu",
+):
+    x_test = torch.from_numpy(np.load(test_feature_dir, allow_pickle=True)).to(
+        dtype=torch.float32).to(device)
+    y_test = torch.from_numpy(np.load(test_label_dir, allow_pickle=True)).to(
+        dtype=torch.long).to(device)
+
+    model = stan_model(
+        time_windows_dim=x_test.shape[1],
+        spatio_windows_dim=x_test.shape[2],
+        feat_dim=x_test.shape[3],
+        num_classes=num_classes,
+        attention_hidden_dim=attention_hidden_dim,
+    )
+    model.load_state_dict(torch.load(path))
+    model.to(device)
+
+    # feats_test = torch.from_numpy(
+    #     x_test).to(dtype=torch.float32).to(device)
+    # feats_test.transpose_(1, 2)
+    # labels_test = torch.from_numpy(y_test).to(dtype=torch.long)
+    feats_test = x_test
+    labels_test = y_test
+
+    batch_num_test = ceil(len(labels_test) / batch_size)
+    with torch.no_grad():
+        pred = []
+        for batch in range(batch_num):
+            optimizer.zero_grad()
+            batch_mask = list(
+                range(batch*batch_size, min((batch+1)*batch_size, len(labels_test))))
+            output = model(feats_test[batch_mask])
+            pred.extend(to_pred(output))
+
+        true = labels_test.cpu().numpy()
+        pred = np.array(pred)
+        print(
+            f"test set | auc: {roc_auc_score(true, pred):.4f}, F1: {f1_score(true, pred, average='macro'):.4f}, AP: {average_precision_score(true, pred):.4f}")
+        print(confusion_matrix(true, pred))
+    
+    path = '/content/drive/My Drive/Spring 2024/Applied ML Cloud/SpatioTemporalFraud/stan_trained.pth'
+    torch.save(model.state_dict(), path)

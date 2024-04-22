@@ -12,3 +12,5 @@ batch_size: 64
 attention_hidden_dim: 150
 lr: 0.0001
 device: cuda:0
+
+save_path: /content/drive/My Drive/Spring 2024/Applied ML Cloud/SpatioTemporalFraud/stan_trained.pth
