@@ -9,36 +9,6 @@ import os
 from math import ceil
 import torch.nn.functional as F
 
-def prune_model(model, x_train, y_train, x_test, y_test, prune_iter=1, batch_size=256, lr=3e-3, epochs=18, device='cpu', prune_perct=0.1):
-    print(f"Number of parameters in original model: {sum(p.numel() for p in model.parameters())} parameters")
-    
-    # Iterative pruning
-    while prune_iter > 0:
-        prune_iter -= 1
-
-        # Prune the Conv3d layer
-        prune.l1_unstructured(model.conv, name='weight', amount=prune_perct)
-
-        # Prune each Linear layer within 'linears'
-        for name, module in model.named_children():
-            if name == 'linears':
-                for name_seq, module_seq in module.named_children():
-                    if isinstance(module_seq, torch.nn.Linear):
-                        prune.l1_unstructured(module_seq, name='weight', amount=prune_perct)
-
-
-        # Retrain to regain lost accuracy
-        train_model(model, x_train, y_train, batch_size, lr, device, epochs)
-        print(f"Prune iteration {prune_iter} complete")
-        eval_model(model, x_test, y_test, batch_size, lr)
-    
-    # Make pruning permanent
-    for name, module in model.named_modules():
-        for hook in list(module._forward_pre_hooks.values()):
-            if isinstance(hook, torch.nn.utils.prune.BasePruningMethod):
-                prune.remove(module, 'weight')
-    return model
-
 def to_pred(logits: torch.Tensor) -> list:
     with torch.no_grad():
         pred = F.softmax(logits, dim=1).cpu()
@@ -76,7 +46,7 @@ def eval_model(model, x_test, y_test, batch_size, lr):
         print(
             f"test set | auc: {roc_auc_score(true, pred):.4f}, F1: {f1_score(true, pred, average='macro'):.4f}, AP: {average_precision_score(true, pred):.4f}")
        
-def train_model(model, x_train, y_train, batch_size, lr, device, epochs):
+def fine_tune(model, x_train, y_train, batch_size, lr, device, epochs):
     nume_feats = x_train
     labels = y_train
 
@@ -119,9 +89,3 @@ def train_model(model, x_train, y_train, batch_size, lr, device, epochs):
         pred = np.array(pred)
         print(
             f"Epoch: {epoch}, loss: {(loss / batch_num):.4f}, auc: {roc_auc_score(true, pred):.4f}, F1: {f1_score(true, pred, average='macro'):.4f}, AP: {average_precision_score(true, pred):.4f}")
-        
-def quantize_model(model):
-    # Dynamic quantization of linear layers
-    model_fp32_prepared = torch.quantization.quantize_dynamic(model, {nn.Linear}, dtype=torch.qint8)
-
-    return model_fp32_prepared

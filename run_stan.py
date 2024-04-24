@@ -1,16 +1,11 @@
 import os
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-from config import Config
-from feature_engineering.data_engineering import data_engineer_benchmark, span_data_2d, span_data_3d
-from methods.stan.stan_main import stan_test, stan_train
+from feature_engineering.data_engineering import span_data_3d
+from methods.stan.stan_main import stan_test, stan_train, stan_prune
 import logging
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-import sys
-import pickle
-import dgl
-from scipy.io import loadmat
 import yaml
 
 logger = logging.getLogger(__name__)
@@ -21,7 +16,6 @@ def base_load_data(args: dict):
     data_path = "data/S-FFSD.csv"
     feat_df = pd.read_csv(data_path)
     train_size = 1 - args['test_size']
-    method = args['method']
     # for ICONIP16 & AAAI20
     if os.path.exists("data/tel_3d.npy"):
         return
@@ -63,7 +57,7 @@ def main(args):
             args['trainlabel'], 
             args['testfeature'],
             args['testlabel'],
-            args['save_path'],
+            args['train_save_path'],
             mode='3d',
             epochs=args['epochs'],
             batch_size=args['batch_size'],
@@ -76,13 +70,28 @@ def main(args):
         stan_test(
             args['testfeature'],
             args['testlabel'],
-            args['save_path'],
-            mode='3d',
-            epochs=args['epochs'],
+            args['train_save_path'],
             batch_size=args['batch_size'],
             attention_hidden_dim=args['attention_hidden_dim'],
             lr=args['lr'],
             device=args['device'],
+        )
+
+    elif args['mode'] == 'prune':
+        stan_prune(
+            args['trainfeature'],
+            args['trainlabel'],
+            args['testfeature'],
+            args['testlabel'],
+            args['train_save_path'],
+            batch_size=args['batch_size'],
+            attention_hidden_dim=args['attention_hidden_dim'],
+            lr=args['lr'],
+            num_classes=2,
+            device=args['device'],
+            fine_tune_epochs= 3,
+            prune_iter=3,
+            prune_perct=0.1
         )
 
 
