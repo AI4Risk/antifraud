@@ -7,9 +7,10 @@ from math import floor, ceil
 from methods.stan.stan import stan_model
 from sklearn.metrics import confusion_matrix, roc_auc_score, f1_score, average_precision_score
 from torch.nn.utils import prune
+import os
+import io
 
 from utils import count_nonzero_parameters, fine_tune, eval_model
-
 
 def to_pred(logits: torch.Tensor) -> list:
     with torch.no_grad():
@@ -262,4 +263,93 @@ def stan_prune(
     # save model
     torch.save(model.state_dict(), load_path.replace('.pt', '_pruned.pt'))
 
+
+def stan_quant(
+        train_feature_dir,
+        train_label_dir,
+        test_feature_dir,
+        test_label_dir,
+        load_path: str,
+        device='cpu',
+        num_classes=2,
+        attention_hidden_dim=150,
+):
+    x_train = torch.from_numpy(np.load(train_feature_dir, allow_pickle=True)).to(
+        dtype=torch.float32).to(device)
+    y_train = torch.from_numpy(np.load(train_label_dir, allow_pickle=True)).to(
+        dtype=torch.long).to(device)
+    x_test = torch.from_numpy(np.load(test_feature_dir, allow_pickle=True)).to(
+        dtype=torch.float32).to(device)
+    y_test = torch.from_numpy(np.load(test_label_dir, allow_pickle=True)).to(
+        dtype=torch.long).to(device)
     
+    model = stan_model(
+        time_windows_dim=x_test.shape[1],
+        spatio_windows_dim=x_test.shape[2],
+        feat_dim=x_test.shape[3],
+        num_classes=num_classes,
+        attention_hidden_dim=attention_hidden_dim,
+    )
+    if device == "cpu":
+        model.load_state_dict(torch.load(load_path, map_location=torch.device('cpu')))
+    else:
+        model.load_state_dict(torch.load(load_path))
+    model.to(device)
+
+    # Check supported backends
+    supported_backends = torch.backends.quantized.supported_engines
+
+    # Print available backends
+    print("Supported quantization backends: ", supported_backends)
+
+    # Priority order of backends
+    # ARM CPUs need qnnpack backend
+    preferred_order = ['fbgemm', 'qnnpack']
+    for backend in preferred_order:
+        if backend in supported_backends:
+            # Set the supported backend
+            torch.backends.quantized.engine = backend
+            save_backend = backend
+            break
+
+    # For Conv3d layers, use static quantization
+    # Linear layers will use dynamic which has no qconfig
+    for module_name, module in model.named_modules():
+        if isinstance(module, torch.nn.Conv3d):
+            module.qconfig = torch.ao.quantization.get_default_qconfig(save_backend)
+
+    # Wrap the model with quant observers
+    model = torch.ao.quantization.QuantWrapper(model)
+
+    # Prepare
+    torch.ao.quantization.prepare(model, inplace=True)
+
+    # calibrate the model
+    model.eval()
+    with torch.no_grad():
+        model(x_train)
+    print("done calibrating")
+
+    # convert the model to a quantized model
+    quant_model = torch.ao.quantization.convert(model)
+    print("done static quantization on conv3d layers")
+
+
+    #### Dynamic quantization for Linear layers
+    # this and the saving of the model doesn't work on ARM CPUs
+    final_quant_model = torch.quantization.quantize_dynamic(
+        quant_model, 
+        {torch.nn.Linear}, 
+        dtype=torch.qint8
+    )
+    print("done applying dynamic quantization")
+
+    # # evaluate the quantized model
+    # eval_model(quant_model, x_test, y_test, batch_size=256, lr=3e-3)
+
+    # save the quantized model
+    torch.save(final_quant_model, load_path.replace('.pt', '_quant_full.pt'))
+
+    # Compare sizes of the original and quantized models
+    print(f"Size of the original model: {os.path.getsize(load_path)} bytes")
+    print(f"Size of the quantized model: {os.path.getsize(load_path.replace('.pt', '_quant.pt'))} bytes")
