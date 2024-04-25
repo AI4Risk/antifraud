@@ -1,11 +1,13 @@
 import numpy as np
+import matplotlib.pyplot as plt
+from datetime import datetime
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import tqdm
 from math import floor, ceil
 from methods.stan.stan import stan_model
-from sklearn.metrics import confusion_matrix, roc_auc_score, f1_score, average_precision_score
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, roc_auc_score, f1_score, average_precision_score
 from torch.nn.utils import prune
 import os
 import io
@@ -157,6 +159,9 @@ def stan_test(
     y_test = torch.from_numpy(np.load(test_label_dir, allow_pickle=True)).to(
         dtype=torch.long).to(device)
 
+    print("Loading model: ", path)
+
+    # Commented out when testing quanized model
     model = stan_model(
         time_windows_dim=x_test.shape[1],
         spatio_windows_dim=x_test.shape[2],
@@ -164,10 +169,41 @@ def stan_test(
         num_classes=num_classes,
         attention_hidden_dim=attention_hidden_dim,
     )
+
     if device == "cpu":
-        model.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
+        state_dict = torch.load(path, map_location=torch.device('cpu'))
+
+        # Change the parameter key names to remove the 'module.' prefix
+        '''
+        new_state_dict = {}
+        for k, v in state_dict.items():
+            if k.startswith('module.'):
+                name = k[7:]
+                new_state_dict[name] = v
+            else:
+                new_state_dict[k] = v
+        
+        model = torch.ao.quantization.QuantWrapper(model)
+        '''
+
+        model.load_state_dict(state_dict, strict=False)
     else:
-        model.load_state_dict(torch.load(path))
+        state_dict = torch.load(path)
+
+        '''
+        new_state_dict = {}
+        for k, v in state_dict.items():
+            if k.startswith('module.'):
+                name = k[7:]
+                new_state_dict[name] = v
+            else:
+                new_state_dict[k] = v
+        
+        model = torch.ao.quantization.QuantWrapper(model)
+        '''
+
+        model.load_state_dict(state_dict, strict=False)
+
     model.to(device)
 
     feats_test = x_test
@@ -176,8 +212,10 @@ def stan_test(
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     batch_num = ceil(len(labels_test) / batch_size)
+
     with torch.no_grad():
         pred = []
+        start = datetime.now()
         for batch in range(batch_num):
             optimizer.zero_grad()
             batch_mask = list(
@@ -185,11 +223,25 @@ def stan_test(
             output = model(feats_test[batch_mask])
             pred.extend(to_pred(output))
 
+        end = datetime.now()
+        inference_time = end - start
+        print(f"Time taken for inference: {inference_time}")
+
         true = labels_test.cpu().numpy()
         pred = np.array(pred)
         print(
             f"test set | auc: {roc_auc_score(true, pred):.4f}, F1: {f1_score(true, pred, average='macro'):.4f}, AP: {average_precision_score(true, pred):.4f}")
-        # print(confusion_matrix(true, pred))
+        
+        cm = confusion_matrix(true, pred)
+        print(cm)
+        '''
+        cm_disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Legitimate", "Fraud"])
+        fig, ax = plt.subplots(figsize=(10, 10))
+        fig.suptitle('STAN Confusion Matrix')
+        cm_disp.plot(ax=ax)
+        fig.savefig('/content/drive/MyDrive/Spring 2024/Applied ML Cloud/SpatioTemporalFraud/images/stan_trained.png')
+        '''
+
 
 def stan_prune(
         train_feature_dir,
@@ -223,6 +275,7 @@ def stan_prune(
         num_classes=num_classes,
         attention_hidden_dim=attention_hidden_dim,
     )
+
     if device == "cpu":
         model.load_state_dict(torch.load(load_path, map_location=torch.device('cpu')))
     else:
@@ -274,6 +327,7 @@ def stan_quant(
         num_classes=2,
         attention_hidden_dim=150,
 ):
+    print(device)
     x_train = torch.from_numpy(np.load(train_feature_dir, allow_pickle=True)).to(
         dtype=torch.float32).to(device)
     y_train = torch.from_numpy(np.load(train_label_dir, allow_pickle=True)).to(
@@ -308,8 +362,10 @@ def stan_quant(
     for backend in preferred_order:
         if backend in supported_backends:
             # Set the supported backend
+            print(backend, "is supported")
             torch.backends.quantized.engine = backend
             save_backend = backend
+
             break
 
     # For Conv3d layers, use static quantization
@@ -337,19 +393,22 @@ def stan_quant(
 
     #### Dynamic quantization for Linear layers
     # this and the saving of the model doesn't work on ARM CPUs
+    '''
     final_quant_model = torch.quantization.quantize_dynamic(
         quant_model, 
         {torch.nn.Linear}, 
         dtype=torch.qint8
     )
     print("done applying dynamic quantization")
+    '''
 
     # # evaluate the quantized model
-    # eval_model(quant_model, x_test, y_test, batch_size=256, lr=3e-3)
+    #eval_model(quant_model, x_test, y_test, batch_size=256, lr=3e-3)
 
     # save the quantized model
-    torch.save(final_quant_model, load_path.replace('.pt', '_quant_full.pt'))
+    #torch.save(final_quant_model, '/content/drive/MyDrive/Spring 2024/Applied ML Cloud/SpatioTemporalFraud/models/stan_trained_quant_full.pth')
+    torch.save(quant_model.state_dict(), '/content/drive/MyDrive/Spring 2024/Applied ML Cloud/SpatioTemporalFraud/models/stan_trained_quant_static_only_weights.pth')
 
     # Compare sizes of the original and quantized models
     print(f"Size of the original model: {os.path.getsize(load_path)} bytes")
-    print(f"Size of the quantized model: {os.path.getsize(load_path.replace('.pt', '_quant.pt'))} bytes")
+    print(f"Size of the quantized model: {os.path.getsize('/content/drive/MyDrive/Spring 2024/Applied ML Cloud/SpatioTemporalFraud/models/stan_trained_quant_static_only_weights.pth')} bytes")
