@@ -15,6 +15,7 @@ logs
 nohup.out
 
 methods/stagn/test_gnn.ipynb
+models/stan_trained.pth
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
