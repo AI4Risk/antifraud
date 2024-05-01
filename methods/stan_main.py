@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import tqdm
 from math import floor, ceil
-from methods.stan.stan import stan_model
+from methods.stan import stan_model
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, roc_auc_score, f1_score, average_precision_score
 from torch.nn.utils import prune
 import os

@@ -1,7 +1,7 @@
 import os
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from feature_engineering.data_engineering import span_data_3d
-from methods.stan.stan_main import stan_test, stan_train, stan_prune, stan_quant
+from methods.stan_main import stan_test, stan_train, stan_prune, stan_quant
 import logging
 import numpy as np
 import pandas as pd
