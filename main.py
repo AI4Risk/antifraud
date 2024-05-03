@@ -1,7 +1,7 @@
 import os
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from feature_engineering.data_engineering import span_data_3d
-from methods.stan_main import stan_test, stan_train, stan_prune, stan_quant
+from methods.stan_main import stan_test, stan_train, stan_prune
 import logging
 import numpy as np
 import pandas as pd
@@ -36,21 +36,6 @@ def base_load_data(args: dict):
 def main(args):
     base_load_data(args)
 
-    '''
-    stan_main(
-        args['trainfeature'],
-        args['trainlabel'],
-        args['testfeature'],
-        args['testlabel'],
-        mode='3d',
-        epochs=args['epochs'],
-        batch_size=args['batch_size'],
-        attention_hidden_dim=args['attention_hidden_dim'],
-        lr=args['lr'],
-        device=args['device']
-    )
-    '''
-
     if args['mode'] == 'train':
         stan_train(
             args['trainfeature'], 
@@ -58,6 +43,7 @@ def main(args):
             args['testfeature'],
             args['testlabel'],
             args['train_save_path'],
+            num_classes=2,
             mode='3d',
             epochs=args['epochs'],
             batch_size=args['batch_size'],
@@ -71,6 +57,7 @@ def main(args):
             args['testfeature'],
             args['testlabel'],
             args['train_save_path'],
+            num_classes=2,
             batch_size=args['batch_size'],
             attention_hidden_dim=args['attention_hidden_dim'],
             lr=args['lr'],
@@ -94,6 +81,7 @@ def main(args):
             prune_perct=0.1
         )
 
+    '''
     elif args['mode'] == 'quantize':
         stan_quant(
             args['trainfeature'],
@@ -105,6 +93,7 @@ def main(args):
             num_classes=2,
             attention_hidden_dim=args['attention_hidden_dim']
         )
+    '''
 
 if __name__ == "__main__":
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,

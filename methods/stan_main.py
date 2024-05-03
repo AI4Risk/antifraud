@@ -12,7 +12,6 @@ from torch.nn.utils import prune
 import os
 import io
 
-from utils import count_nonzero_parameters, fine_tune, eval_model
 
 def to_pred(logits: torch.Tensor) -> list:
     with torch.no_grad():
@@ -20,27 +19,7 @@ def to_pred(logits: torch.Tensor) -> list:
         pred = pred.argmax(dim=1)
     return pred.numpy().tolist()
 
-def att_train(
-    x_train,
-    y_train,
-    x_test,
-    y_test,
-    num_classes: int = 2,
-    epochs: int = 18,
-    batch_size: int = 256,
-    attention_hidden_dim: int = 150,
-    lr: float = 3e-3,
-    device: str = "cpu"
-):
-    model = stan_model(
-        time_windows_dim=x_train.shape[1],
-        spatio_windows_dim=x_train.shape[2],
-        feat_dim=x_train.shape[3],
-        num_classes=num_classes,
-        attention_hidden_dim=attention_hidden_dim,
-    )
-    model.to(device)
-
+def fine_tune(model, x_train, y_train, batch_size, lr, device, epochs):
     nume_feats = x_train
     labels = y_train
 
@@ -76,19 +55,27 @@ def att_train(
             optimizer.step()
 
             loss += batch_loss.item()
+            # print(to_pred(output))
             pred.extend(to_pred(output))
 
         true = labels.cpu().numpy()
         pred = np.array(pred)
         print(
             f"Epoch: {epoch}, loss: {(loss / batch_num):.4f}, auc: {roc_auc_score(true, pred):.4f}, F1: {f1_score(true, pred, average='macro'):.4f}, AP: {average_precision_score(true, pred):.4f}")
+    
+    return model
 
+
+def eval_model(model, x_test, y_test, batch_size, lr):
     feats_test = x_test
     labels_test = y_test
+
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     batch_num_test = ceil(len(labels_test) / batch_size)
     with torch.no_grad():
         pred = []
+        start = datetime.now()
         for batch in range(batch_num_test):
             optimizer.zero_grad()
             batch_mask = list(
@@ -96,13 +83,41 @@ def att_train(
             output = model(feats_test[batch_mask])
             pred.extend(to_pred(output))
 
+        end = datetime.now()
+        inference_time = end - start
+        print(f"Time taken for inference: {inference_time}")
+
         true = labels_test.cpu().numpy()
         pred = np.array(pred)
         print(
             f"test set | auc: {roc_auc_score(true, pred):.4f}, F1: {f1_score(true, pred, average='macro'):.4f}, AP: {average_precision_score(true, pred):.4f}")
-        print(confusion_matrix(true, pred))
+        cm = confusion_matrix(true, pred)
+        cm_disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Legitimate", "Fraud"])
+        fig, ax = plt.subplots(figsize=(10, 10))
+        fig.suptitle('STAN Confusion Matrix')
+        cm_disp.plot(ax=ax)
+        fig.show()
+        fig.savefig('/content/drive/MyDrive/Spring 2024/Applied ML Cloud/SpatioTemporalFraud/images/stan_trained.png')
 
-        return model
+def create_model(x, num_classes, attention_hidden_dim):
+    return stan_model(
+        time_windows_dim=x.shape[1],
+        spatio_windows_dim=x.shape[2],
+        feat_dim=x.shape[3],
+        num_classes=num_classes,
+        attention_hidden_dim=attention_hidden_dim,
+    )
+
+# Count parameters after pruning
+def count_nonzero_parameters(model):
+    nonzero_params = 0
+    for param in model.parameters():
+        # Only count parameters with gradients (ignoring those without, like biases in certain configurations)
+        if param.requires_grad:
+            # Use torch's nonzero function and count the resulting tensor's size along dimension 0
+            nonzero_params += torch.nonzero(param, as_tuple=False).size(0)
+    return nonzero_params
+        
 
 def stan_train(
     train_feature_dir,
@@ -110,6 +125,7 @@ def stan_train(
     test_feature_dir,
     test_label_dir,
     save_path: str,
+    num_classes: int = 2,
     mode: str = "3d",
     epochs: int = 18,
     batch_size: int = 256,
@@ -117,28 +133,22 @@ def stan_train(
     lr: float = 3e-3,
     device: str = "cpu"
 ):
-    train_feature = torch.from_numpy(np.load(train_feature_dir, allow_pickle=True)).to(
+    x_train = torch.from_numpy(np.load(train_feature_dir, allow_pickle=True)).to(
         dtype=torch.float32).to(device)
-    train_label = torch.from_numpy(np.load(train_label_dir, allow_pickle=True)).to(
+    y_train = torch.from_numpy(np.load(train_label_dir, allow_pickle=True)).to(
         dtype=torch.long).to(device)
-    test_feature = torch.from_numpy(np.load(test_feature_dir, allow_pickle=True)).to(
+    x_test = torch.from_numpy(np.load(test_feature_dir, allow_pickle=True)).to(
         dtype=torch.float32).to(device)
-    test_label = torch.from_numpy(np.load(test_label_dir, allow_pickle=True)).to(
+    y_test = torch.from_numpy(np.load(test_label_dir, allow_pickle=True)).to(
         dtype=torch.long).to(device)
 
     # y_pred = np.zeros(shape=test_label.shape)
     if mode == "3d":
-        model = att_train(
-            train_feature,
-            train_label,
-            test_feature,
-            test_label,
-            epochs=epochs,
-            batch_size=batch_size,
-            attention_hidden_dim=attention_hidden_dim,
-            lr=lr,
-            device=device
-        )
+        model = create_model(x_train, num_classes, attention_hidden_dim)
+        model.to(device)
+
+        model = fine_tune(model, x_train, y_train, batch_size, lr, device, epochs)
+        eval_model(model, x_test, y_test, batch_size, lr)
 
     if save_path:
         torch.save(model.state_dict(), save_path)
@@ -161,87 +171,16 @@ def stan_test(
 
     print("Loading model: ", path)
 
-    # Commented out when testing quanized model
-    model = stan_model(
-        time_windows_dim=x_test.shape[1],
-        spatio_windows_dim=x_test.shape[2],
-        feat_dim=x_test.shape[3],
-        num_classes=num_classes,
-        attention_hidden_dim=attention_hidden_dim,
-    )
+    model = create_model(x_test, num_classes, attention_hidden_dim)
 
     if device == "cpu":
-        state_dict = torch.load(path, map_location=torch.device('cpu'))
-
-        # Change the parameter key names to remove the 'module.' prefix
-        '''
-        new_state_dict = {}
-        for k, v in state_dict.items():
-            if k.startswith('module.'):
-                name = k[7:]
-                new_state_dict[name] = v
-            else:
-                new_state_dict[k] = v
-        
-        model = torch.ao.quantization.QuantWrapper(model)
-        '''
-
-        model.load_state_dict(state_dict, strict=False)
+        model.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
     else:
-        state_dict = torch.load(path)
-
-        '''
-        new_state_dict = {}
-        for k, v in state_dict.items():
-            if k.startswith('module.'):
-                name = k[7:]
-                new_state_dict[name] = v
-            else:
-                new_state_dict[k] = v
-        
-        model = torch.ao.quantization.QuantWrapper(model)
-        '''
-
-        model.load_state_dict(state_dict, strict=False)
-
+        model.load_state_dict(torch.load(path))
     model.to(device)
 
-    feats_test = x_test
-    labels_test = y_test
-
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-
-    batch_num = ceil(len(labels_test) / batch_size)
-
-    with torch.no_grad():
-        pred = []
-        start = datetime.now()
-        for batch in range(batch_num):
-            optimizer.zero_grad()
-            batch_mask = list(
-                range(batch*batch_size, min((batch+1)*batch_size, len(labels_test))))
-            output = model(feats_test[batch_mask])
-            pred.extend(to_pred(output))
-
-        end = datetime.now()
-        inference_time = end - start
-        print(f"Time taken for inference: {inference_time}")
-
-        true = labels_test.cpu().numpy()
-        pred = np.array(pred)
-        print(
-            f"test set | auc: {roc_auc_score(true, pred):.4f}, F1: {f1_score(true, pred, average='macro'):.4f}, AP: {average_precision_score(true, pred):.4f}")
+    eval_model(model, x_test, y_test, batch_size, lr)
         
-        cm = confusion_matrix(true, pred)
-        print(cm)
-        '''
-        cm_disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Legitimate", "Fraud"])
-        fig, ax = plt.subplots(figsize=(10, 10))
-        fig.suptitle('STAN Confusion Matrix')
-        cm_disp.plot(ax=ax)
-        fig.savefig('/content/drive/MyDrive/Spring 2024/Applied ML Cloud/SpatioTemporalFraud/images/stan_trained.png')
-        '''
-
 
 def stan_prune(
         train_feature_dir,
@@ -268,13 +207,7 @@ def stan_prune(
     y_test = torch.from_numpy(np.load(test_label_dir, allow_pickle=True)).to(
         dtype=torch.long).to(device)
     
-    model = stan_model(
-        time_windows_dim=x_test.shape[1],
-        spatio_windows_dim=x_test.shape[2],
-        feat_dim=x_test.shape[3],
-        num_classes=num_classes,
-        attention_hidden_dim=attention_hidden_dim,
-    )
+    model = create_model(x_train, num_classes, attention_hidden_dim)
 
     if device == "cpu":
         model.load_state_dict(torch.load(load_path, map_location=torch.device('cpu')))
@@ -301,7 +234,7 @@ def stan_prune(
 
 
         # Retrain to regain lost accuracy
-        fine_tune(model, x_train, y_train, batch_size, lr, device, fine_tune_epochs)
+        model = fine_tune(model, x_train, y_train, batch_size, lr, device, fine_tune_epochs)
         eval_model(model, x_test, y_test, batch_size, lr)
         print("*" * 3 + f" Prune iteration {tmp - prune_iter} complete " + "*" * 3)
     
@@ -316,7 +249,7 @@ def stan_prune(
     # save model
     torch.save(model.state_dict(), load_path.replace('.pt', '_pruned.pt'))
 
-
+'''
 def stan_quant(
         train_feature_dir,
         train_label_dir,
@@ -337,13 +270,7 @@ def stan_quant(
     y_test = torch.from_numpy(np.load(test_label_dir, allow_pickle=True)).to(
         dtype=torch.long).to(device)
     
-    model = stan_model(
-        time_windows_dim=x_test.shape[1],
-        spatio_windows_dim=x_test.shape[2],
-        feat_dim=x_test.shape[3],
-        num_classes=num_classes,
-        attention_hidden_dim=attention_hidden_dim,
-    )
+    model = create_model(x_train, num_classes, attention_hidden_dim)
     if device == "cpu":
         model.load_state_dict(torch.load(load_path, map_location=torch.device('cpu')))
     else:
@@ -393,14 +320,14 @@ def stan_quant(
 
     #### Dynamic quantization for Linear layers
     # this and the saving of the model doesn't work on ARM CPUs
-    '''
+    
     final_quant_model = torch.quantization.quantize_dynamic(
         quant_model, 
         {torch.nn.Linear}, 
         dtype=torch.qint8
     )
     print("done applying dynamic quantization")
-    '''
+    
 
     # # evaluate the quantized model
     #eval_model(quant_model, x_test, y_test, batch_size=256, lr=3e-3)
@@ -412,3 +339,4 @@ def stan_quant(
     # Compare sizes of the original and quantized models
     print(f"Size of the original model: {os.path.getsize(load_path)} bytes")
     print(f"Size of the quantized model: {os.path.getsize('/content/drive/MyDrive/Spring 2024/Applied ML Cloud/SpatioTemporalFraud/models/stan_trained_quant_static_only_weights.pth')} bytes")
+'''
