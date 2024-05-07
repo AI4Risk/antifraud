@@ -97,7 +97,6 @@ def eval_model(model, x_test, y_test, batch_size, lr):
         fig.suptitle('STAN Confusion Matrix')
         cm_disp.plot(ax=ax)
         fig.show()
-        fig.savefig('/content/drive/MyDrive/Spring 2024/Applied ML Cloud/SpatioTemporalFraud/images/stan_trained.png')
 
 def create_model(x, num_classes, attention_hidden_dim):
     return stan_model(
@@ -249,7 +248,6 @@ def stan_prune(
     # save model
     torch.save(model.state_dict(), load_path.replace('.pt', '_pruned.pt'))
 
-'''
 def stan_quant(
         train_feature_dir,
         train_label_dir,
@@ -292,7 +290,6 @@ def stan_quant(
             print(backend, "is supported")
             torch.backends.quantized.engine = backend
             save_backend = backend
-
             break
 
     # For Conv3d layers, use static quantization
@@ -311,32 +308,17 @@ def stan_quant(
     model.eval()
     with torch.no_grad():
         model(x_train)
-    print("done calibrating")
 
     # convert the model to a quantized model
     quant_model = torch.ao.quantization.convert(model)
-    print("done static quantization on conv3d layers")
-
 
     #### Dynamic quantization for Linear layers
     # this and the saving of the model doesn't work on ARM CPUs
-    
     final_quant_model = torch.quantization.quantize_dynamic(
         quant_model, 
         {torch.nn.Linear}, 
         dtype=torch.qint8
     )
-    print("done applying dynamic quantization")
-    
 
-    # # evaluate the quantized model
-    #eval_model(quant_model, x_test, y_test, batch_size=256, lr=3e-3)
-
-    # save the quantized model
-    #torch.save(final_quant_model, '/content/drive/MyDrive/Spring 2024/Applied ML Cloud/SpatioTemporalFraud/models/stan_trained_quant_full.pth')
-    torch.save(quant_model.state_dict(), '/content/drive/MyDrive/Spring 2024/Applied ML Cloud/SpatioTemporalFraud/models/stan_trained_quant_static_only_weights.pth')
-
-    # Compare sizes of the original and quantized models
-    print(f"Size of the original model: {os.path.getsize(load_path)} bytes")
-    print(f"Size of the quantized model: {os.path.getsize('/content/drive/MyDrive/Spring 2024/Applied ML Cloud/SpatioTemporalFraud/models/stan_trained_quant_static_only_weights.pth')} bytes")
-'''
+    # Save the quantized model
+    torch.save(final_quant_model.state_dict(), load_path.replace('.pt', '_quantized.pt'))

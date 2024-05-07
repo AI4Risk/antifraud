@@ -1,7 +1,7 @@
 import os
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from feature_engineering.data_engineering import span_data_3d
-from methods.stan_main import stan_test, stan_train, stan_prune
+from methods.stan_main import stan_test, stan_train, stan_prune, stan_quant
 import logging
 import numpy as np
 import pandas as pd
@@ -77,11 +77,10 @@ def main(args):
             num_classes=2,
             device=args['device'],
             fine_tune_epochs= 3,
-            prune_iter=3,
+            prune_iter=args['prune_iter'],
             prune_perct=0.1
         )
 
-    '''
     elif args['mode'] == 'quantize':
         stan_quant(
             args['trainfeature'],
@@ -93,7 +92,6 @@ def main(args):
             num_classes=2,
             attention_hidden_dim=args['attention_hidden_dim']
         )
-    '''
 
 if __name__ == "__main__":
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
