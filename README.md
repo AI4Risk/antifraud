@@ -94,7 +94,7 @@ The performance of five models tested on three datasets are listed as follows:
 
 > `MCNN`, `STAN` and `STAGN` are presently not applicable to YelpChi and Amazon datasets.
 >
-> `HOGRL` are presently not applicable to S-FFSD dataset.
+> `HOGRL` is presently not applicable to S-FFSD dataset.
 
 ## Repo Structure
 The repository is organized as follows:
