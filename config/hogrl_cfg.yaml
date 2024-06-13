@@ -1,6 +1,6 @@
 dataset: amazon # yelp, amazon
 
-batch_size: 256 # 'Batch size 1024 for yelp and CCFD, 256 for amazon.'
+batch_size: 256 # 'Batch size 1024 for yelp, 256 for amazon.'
 lr: 0.005
 weight_decay: 0.00005
 emb_size: 64 # Node embedding size at the last layer
