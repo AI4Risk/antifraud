@@ -23,7 +23,8 @@ def test(idx_eval, y_eval, gnn_model, feat_data, edge_indexs):
 
 def hogrl_main(args):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    
+    print(device)
+    print('loading data...')
     prefix = os.path.join(os.path.dirname(__file__), "..", "..", "data/")
     edge_indexs,feat_data,labels = load_data(args['dataset'],args['layers_tree'], prefix)
     
@@ -57,7 +58,8 @@ def hogrl_main(args):
     
     best_val_auc = 0.0
     best_model_state = None
-
+    
+    print('training...')
     for epoch in range(args['num_epochs']):
         gnn_model.train()
         loss = 0
