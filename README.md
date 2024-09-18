@@ -12,6 +12,7 @@ Source codes implementation of papers:
 - `STAGN`: Graph Neural Network for Fraud Detection via Spatial-temporal Attention, in TKDE2020
 - `GTAN`: Semi-supervised Credit Card Fraud Detection via Attribute-driven Graph Representation, in AAAI2023
 - `RGTAN`: Enhancing Attribute-driven Fraud Detection with Risk-aware Graph Representation, 
+- `HOGRL`: Effective High-order Graph Representation Learning for Credit Card Fraud Detection, 
 
 
 
@@ -19,9 +20,8 @@ Source codes implementation of papers:
 
 ### Data processing
 1. Run `unzip /data/Amazon.zip` and `unzip /data/YelpChi.zip` to unzip the datasets; 
-2. Run `python feature_engineering/data_process.py
-`
-to pre-process all datasets needed in this repo.
+2. Run `python feature_engineering/data_process.py` to pre-process all datasets needed in this repo.
+3. Run `python feature_engineering/get_matrix.py` to generate the adjacency matrix of the high-order transaction graph.Please note that this will require approximately 280GB of storage space. Please be aware that if you intend to run `HOGRL` , you should first execute the `get_matrix.py` script.
 
 ### Training & Evalutaion
 <!-- 
@@ -48,6 +48,12 @@ python main.py --method rgtan
 ```
 For specification of hyperparameters, please refer to `config/gtan_cfg.yaml` and `config/rgtan_cfg.yaml`.
 
+Model in `HOGRL` can be run via:
+
+```
+python main.py --method hogrl
+```
+For specification of hyperparameters, please refer to `config/hogrl_cfg.yaml`.
 
 
 ### Data Description
@@ -84,8 +90,11 @@ The performance of five models tested on three datasets are listed as follows:
 |STAGN|- |- | -| -| -| -|0.7659|0.6852|0.3599|
 |GTAN|0.9241|0.7988|0.7513|0.9630|0.9213|0.8838|0.8286|0.7336|0.6585|
 |RGTAN|0.9498|0.8492|0.8241|0.9750|0.9200|0.8926|0.8461|0.7513|0.6939|
+|HOGRL|0.9808|0.8595|-|0.9800|0.9198|-|-|-|-|
 
 > `MCNN`, `STAN` and `STAGN` are presently not applicable to YelpChi and Amazon datasets.
+>
+> `HOGRL` is presently not applicable to S-FFSD dataset.
 
 ## Repo Structure
 The repository is organized as follows:

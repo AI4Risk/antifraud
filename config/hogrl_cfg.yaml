@@ -1,0 +1,14 @@
+dataset: amazon # yelp, amazon
+
+batch_size: 256 # 'Batch size 2048 for yelp, 256 for amazon.'
+lr: 0.005
+weight_decay: 0.00005
+emb_size: 64 # Node embedding size at the last layer
+num_epochs: 1000
+weight: 0.6 #Epoch interval to run test set
+layers: 7 # Number of layers
+test_size: 0.6
+val_size: 0.5
+layers_tree: 7
+seed: 76
+drop_rate: 0.3

@@ -36,6 +36,9 @@ def parse_args():
         yaml_file = "config/gtan_cfg.yaml"
     elif method in ['rgtan']:
         yaml_file = "config/rgtan_cfg.yaml"
+    elif method in ['hogrl']:
+        yaml_file = "config/hogrl_cfg.yaml"
+        
     else:
         raise NotImplementedError("Unsupported method.")
 
@@ -144,6 +147,9 @@ def main(args):
             args['dataset'], args['test_size'])
         rgtan_main(feat_data, g, train_idx, test_idx, labels, args,
                    cat_features, neigh_features, nei_att_head=args['nei_att_heads'][args['dataset']])
+    elif args['method'] == 'hogrl':
+        from methods.hogrl.hogrl_main import hogrl_main
+        hogrl_main(args)
     else:
         raise NotImplementedError("Unsupported method. ")
 
