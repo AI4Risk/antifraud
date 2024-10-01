@@ -127,7 +127,13 @@ dgl-cu113        0.8.1
 ### Citing
 
 If you find *Antifraud* is useful for your research, please consider citing the following papers:
-
+    
+    @inproceedings{zou2024effective,
+      title={Effective High-order Graph Representation Learning for Credit Card Fraud Detection.},
+      author={Zou, Yao and Cheng, Dawei},
+      booktitle={International Joint Conference on Artificial Intelligence},
+      year={2024}
+    }
     @inproceedings{Xiang2023SemiSupervisedCC,
         title={Semi-supervised Credit Card Fraud Detection via Attribute-driven Graph Representation},
         author={Sheng Xiang and Mingzhi Zhu and Dawei Cheng and Enxia Li and Ruihui Zhao and Yi Ouyang and Ling Chen and Yefeng Zheng},
