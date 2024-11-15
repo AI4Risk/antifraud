@@ -205,9 +205,9 @@ if __name__ == "__main__":
         DATADIR, "yelp_rur_adjlists.pickle"))
     sparse_to_adjlist(net_rtr, os.path.join(
         DATADIR, "yelp_rtr_adjlists.pickle"))
-    sparse_to_adjlist(net_rtr, os.path.join(
+    sparse_to_adjlist(net_rsr, os.path.join(
         DATADIR, "yelp_rsr_adjlists.pickle"))
-    sparse_to_adjlist(net_rtr, os.path.join(
+    sparse_to_adjlist(yelp_homo, os.path.join(
         DATADIR, "yelp_homo_adjlists.pickle"))
 
     data_file = yelp
