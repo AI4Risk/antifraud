@@ -162,3 +162,14 @@ class stan_model(nn.Module):
         # print(out.shape)
         # quit()
         return out
+        #  [batch, 8, 5, 5]      -> multi_att
+        #->[batch, 8, 5, 10]     -> multi_att
+        #->[batch, 8, 5, 20]     -> 
+        #->[batch, 1, 8, 5, 20]  -> cnn(64,2,2)
+        #->[batch, 64, 7, 4, 19] -> flatten
+        #->[batch, 34048]        -> fc
+        #->[batch, 2]
+if __name__ == "__main__":
+    model = stan_model()
+    x = torch.zeros([32,8,5])
+    model(x)
