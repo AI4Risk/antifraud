@@ -64,8 +64,8 @@ class multi_HOGRL_Model(nn.Module):
             setattr(self,'Layers'+str(i),Layer_AGG(in_feat,hidden,self.drop_rate,self.weight,num_layers,self.layers_tree))
         self.linear=nn.Linear(hidden*relation_nums,out_feat)
 
-    
-    def forward(self, x, edge_index):
+
+    def forward(self, x, edge_index): # edge_index[0]:(u->v)*E, edge_index[1]:
 
         layer_outputs = []
 
@@ -78,6 +78,11 @@ class multi_HOGRL_Model(nn.Module):
         x = self.linear(x_temp)
         x = F.log_softmax(x, dim=1)
         return x,x_temp
+
+    # [batch,input] -> multi_layer_agg -> 
+    # (Layer_AGG内部特征形状一直为[batch,hidden],集成时alpha为[L]) ->
+    # [batch,hidden*relation_nums] -> linear -> 
+    # [batch,2] 
 
 
 class Graphsage(nn.Module):

@@ -184,7 +184,10 @@ class TransformerConv(nn.Module):
         else:
             h_src = feat
             h_dst = h_src[:graph.number_of_dst_nodes()]
-
+        # print('~~~')
+        # print(h_src.shape) # torch.Size([2420, 126])
+        # print(h_dst.shape) # torch.Size([685, 126])
+        # print('~~~')
         # Step 0. q, k, v
         q_src = self.lin_query(
             h_src).view(-1, self._num_heads, self._out_feats)
@@ -287,13 +290,13 @@ class GraphAttnModel(nn.Module):
         else:
             self.n2v_mlp = lambda x: x
         self.layers = nn.ModuleList()
-        self.layers.append(nn.Embedding(
+        self.layers.append(nn.Embedding( # 0
             n_classes+1, in_feats, padding_idx=n_classes))
-        self.layers.append(
+        self.layers.append( # 1
             nn.Linear(self.in_feats, self.hidden_dim*self.heads[0]))
-        self.layers.append(
+        self.layers.append( # 2
             nn.Linear(self.in_feats, self.hidden_dim*self.heads[0]))
-        self.layers.append(nn.Sequential(nn.BatchNorm1d(self.hidden_dim*self.heads[0]),
+        self.layers.append(nn.Sequential(nn.BatchNorm1d(self.hidden_dim*self.heads[0]), # 3
                                          nn.PReLU(),
                                          nn.Dropout(self.drop),
                                          nn.Linear(self.hidden_dim *
@@ -301,7 +304,7 @@ class GraphAttnModel(nn.Module):
                                          ))
 
         # build multiple layers
-        self.layers.append(TransformerConv(in_feats=self.in_feats,
+        self.layers.append(TransformerConv(in_feats=self.in_feats, # 4
                                            out_feats=self.hidden_dim,
                                            num_heads=self.heads[0],
                                            skip_feat=skip_feat,
@@ -318,7 +321,7 @@ class GraphAttnModel(nn.Module):
                                                gated=gated,
                                                layer_norm=layer_norm,
                                                activation=self.activation))
-        if post_proc:
+        if post_proc: # 5
             self.layers.append(nn.Sequential(nn.Linear(self.hidden_dim * self.heads[-1], self.hidden_dim * self.heads[-1]),
                                              nn.BatchNorm1d(
                                                  self.hidden_dim * self.heads[-1]),
@@ -336,21 +339,42 @@ class GraphAttnModel(nn.Module):
         :param labels: train labels (|input|, )
         :param n2v_feat: whether to use n2v features 
         """
-
+        print('###############################')
+        for item in n2v_feat.values():
+            print(item.shape)
         if n2v_feat is None:
             h = features
         else:
             h = self.n2v_mlp(n2v_feat)
+            print(h.shape)
             h = features + h
-
+            print(h.shape)
+        print(labels.shape)
         label_embed = self.input_drop(self.layers[0](labels))
+        print(label_embed.shape)
         label_embed = self.layers[1](h) + self.layers[2](label_embed)
+        print(label_embed.shape)
         label_embed = self.layers[3](label_embed)
         h = h + label_embed  # residual
-
+        print('####2###')
+        print(h.shape)
         for l in range(self.n_layers):
             h = self.output_drop(self.layers[l+4](blocks[l], h))
+            print(h.shape)
 
         logits = self.layers[-1](h)
+        print(logits.shape)
 
         return logits
+        # a.attribute_embedding:
+        # {'Target'[batch],'Location'[batch],'Type'[batch]} -> as index lookup_table
+        # {'Target'[batch,126],'Location'[batch,126],'Type'[batch,126]}-> drop+mlp+ensemble ->
+        # [batch,126] -> add_input -> [batch,126] --linear2-> h'[batch,256]
+        # label[batch] --embedding-> [batch, 126] --linear1-> label_embed'[batch,256]
+        # b.GTAN(1)
+        # label_embed' --resnet---> h'' [batch,256] 
+        #               |-------|
+        # b.GTAN(2)
+        #  h_1''--attention_on_graph+gate-> h_2'' --attention_on_graph+gate-> h_3''[batch3,256]
+        # batch1:2274 ->              batch2: 669 ->             batch3:128(in config)
+        # -> mlp -> logits[batch3,2]

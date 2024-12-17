@@ -314,7 +314,7 @@ class TransEmbedding(nn.Module):
         super(TransEmbedding, self).__init__()
         self.time_pe = PosEncoding(dim=in_feats_dim, device=device, base=100)
         
-        self.cat_table = nn.ModuleDict({col: nn.Embedding(
+        self.cat_table = nn.ModuleDict({col: nn.Embedding( # fix embedding problem
             max(max(df[col].unique()), max(cat_features[col].unique()))+1,
             in_feats_dim).to(device) for col in cat_features if col not in {"Labels", "Time"}})
 

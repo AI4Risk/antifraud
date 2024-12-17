@@ -22,6 +22,7 @@ from .rgtan_model import RGTAN
 
 def rgtan_main(feat_df, graph, train_idx, test_idx, labels, args, cat_features, neigh_features: pd.DataFrame, nei_att_head):
     # torch.autograd.set_detect_anomaly(True)
+    print(cat_features)
     device = args['device']
     graph = graph.to(device)
     oof_predictions = torch.from_numpy(
