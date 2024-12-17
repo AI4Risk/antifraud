@@ -145,24 +145,20 @@ class stan_model(nn.Module):
 
     def forward(self, X_nume):
         # X shape be like: (batch_size, time_windows_dim, feat_dim)
+        # print(X_nume.shape)
         out = self.attention_layer(X_nume, dim=1)
+        # print(out.shape)
+
         out = self.attention_layer(out, dim=2)
+        # print(out.shape)
         out = torch.unsqueeze(out, 1)
+        # print(out.shape)
         out = self.cnn_layer(out)
+        # print(out.shape)
         out = self.flatten(out)
+        # print(out.shape)
         out = self.linears(out)
-        return out
+        # print(out.shape)
         # print(out.shape)
         # quit()
-
-        #  [batch, 8, 5, 5]      -> multi_att
-        #->[batch, 8, 5, 10]     -> multi_att
-        #->[batch, 8, 5, 20]     -> 
-        #->[batch, 1, 8, 5, 20]  -> cnn(64,2,2)
-        #->[batch, 64, 7, 4, 19] -> flatten
-        #->[batch, 34048]        -> fc
-        #->[batch, 2]
-if __name__ == "__main__":
-    model = stan_model()
-    x = torch.zeros([32,8,5])
-    model(x)
+        return out

@@ -39,6 +39,7 @@ def gtan_main(feat_df, graph, train_idx, test_idx, labels, args, cat_features):
         print(f'Training fold {fold + 1}')
         trn_ind, val_ind = torch.from_numpy(np.array(train_idx)[trn_idx]).long().to(
             device), torch.from_numpy(np.array(train_idx)[val_idx]).long().to(device)
+
         train_sampler = MultiLayerFullNeighborSampler(args['n_layers'])
         train_dataloader = NodeDataLoader(graph,
                                           trn_ind,
@@ -63,8 +64,7 @@ def gtan_main(feat_df, graph, train_idx, test_idx, labels, args, cat_features):
                                         )
         # TODO
         model = GraphAttnModel(in_feats=feat_df.shape[1],
-                               # 为什么要整除4？ 
-                               # 4倍数multi_head attention常规手段
+                               # 为什么要整除4？
                                hidden_dim=args['hid_dim']//4,
                                n_classes=2,
                                heads=[4]*args['n_layers'],  # [4,4,4]
@@ -89,8 +89,6 @@ def gtan_main(feat_df, graph, train_idx, test_idx, labels, args, cat_features):
             # train_acc_list = []
             model.train()
             for step, (input_nodes, seeds, blocks) in enumerate(train_dataloader):
-                print(input_nodes.shape)
-                print(seeds.shape)
                 batch_inputs, batch_work_inputs, batch_labels, lpa_labels = load_lpa_subtensor(num_feat, cat_feat, labels,
                                                                                                seeds, input_nodes, device)
                 # (|input|, feat_dim); null; (|batch|,); (|input|,)

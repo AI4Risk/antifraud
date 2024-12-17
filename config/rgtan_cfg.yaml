@@ -1,18 +1,59 @@
-batch_size: 64
+# batch_size: 256
+# hid_dim: 256
+# lr: 0.002
+# wd: !!float 1e-4
+# n_layers: 4
+# dropout: [0.2, 0.1]
+# device: "cuda:7"
+# early_stopping: 10
+# n_fold: 5
+# seed: 22
+# max_epochs: 200
+# gated: True
+# dataset: amazon # amazon yelp S-FFSD
+# test_size: 0.6
+# nei_att_heads:
+#     yelp: 4
+#     amazon: 5
+#     S-FFSD: 9
+# neigh_features_modi: False
+
+# batch_size: 512 # 512/256
+# hid_dim: 256
+# lr: 0.002
+# wd: !!float 1e-4
+# n_layers: 3 # 2/3
+# dropout: [0.2, 0.1]
+# device: "cuda:2"
+# early_stopping: 10
+# n_fold: 5
+# seed: 22
+# max_epochs: 50
+# gated: True
+# dataset: S-FFSD # amazon yelp S-FFSD
+# test_size: 0.6
+# nei_att_heads:
+#     yelp: 4
+#     amazon: 5
+#     S-FFSD: 9
+# neigh_features_modi: True
+
+batch_size: 1024 # 512/256
 hid_dim: 256
-lr: 0.003
+lr: 0.002
 wd: !!float 1e-4
-n_layers: 3
+n_layers: 3 # 2/3
 dropout: [0.2, 0.1]
-device: "cuda:0"
+device: "cuda:2"
 early_stopping: 10
 n_fold: 5
-seed: 2023
-max_epochs: 15
+seed: 22
+max_epochs: 40
 gated: True
-dataset: amazon # S-FFSD
+dataset: yelp # amazon yelp S-FFSD
 test_size: 0.6
 nei_att_heads:
     yelp: 4
     amazon: 5
     S-FFSD: 9
+neigh_features_modi: False

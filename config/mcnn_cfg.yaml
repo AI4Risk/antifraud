@@ -10,4 +10,4 @@ test_size: 0.2
 epochs: 30
 batch_size: 512
 lr: 0.001
-device: cpu
+device: cuda:1

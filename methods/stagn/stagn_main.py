@@ -64,6 +64,7 @@ def stagn_train_2d(
         pred = to_pred(out[train_idx])
         true = labels[train_idx].cpu().numpy()
         pred = np.array(pred)
+        
         print(f"Epoch: {epoch}, loss: {loss:.4f}, auc: {roc_auc_score(true, pred):.4f}, F1: {f1_score(true, pred, average='macro'):.4f}, AP: {average_precision_score(true, pred):.4f}")
 
     with torch.no_grad():
@@ -73,6 +74,7 @@ def stagn_train_2d(
         pred = np.array(pred)
         print(
             f"test set | auc: {roc_auc_score(true, pred):.4f}, F1: {f1_score(true, pred, average='macro'):.4f}, AP: {average_precision_score(true, pred):.4f}")
+    
 
 
 def stagn_main(

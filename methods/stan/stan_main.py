@@ -127,6 +127,8 @@ def stan_main(
     test_label = torch.from_numpy(np.load(test_label_dir, allow_pickle=True)).to(
         dtype=torch.long).to(device)
 
+    print(train_feature.shape)
+    print(123)
     # y_pred = np.zeros(shape=test_label.shape)
     if mode == "3d":
         att_train(

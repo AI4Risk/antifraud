@@ -313,9 +313,10 @@ class TransEmbedding(nn.Module):
         """
         super(TransEmbedding, self).__init__()
         self.time_pe = PosEncoding(dim=in_feats_dim, device=device, base=100)
-        
-        self.cat_table = nn.ModuleDict({col: nn.Embedding( # fix embedding problem
-            max(max(df[col].unique()), max(cat_features[col].unique()))+1,
+
+        self.cat_table = nn.ModuleDict({col: nn.Embedding(
+            max(max(df[col].unique()), max(cat_features[col].unique()))+1, # 更正代码
+            # max(df[col].unique())+1, # 原代码
             in_feats_dim).to(device) for col in cat_features if col not in {"Labels", "Time"}})
 
         if isinstance(neigh_features, dict):
@@ -351,18 +352,10 @@ class TransEmbedding(nn.Module):
     def forward_emb(self, cat_feat):
         if self.emb_dict is None:
             self.emb_dict = self.cat_table
-        support = {}
-        for col in self.cat_features:
-             if col not in {"Labels", "Time"}:
-                # print(col)
-                # print(self.emb_dict[col])
-                # print(cat_feat[col].shape)
-                # print(max(cat_feat[col].unique())+1)
-                support[col] = self.emb_dict[col](cat_feat[col])
+        # print(self.emb_dict)
         # print(df['trans_md'])
-        # support = {col: self.emb_dict[col](
-        #     cat_feat[col]) for col in self.cat_features if col not in {"Labels", "Time"}}
-        # print(support)
+        support = {col: self.emb_dict[col](
+            cat_feat[col]) for col in self.cat_features if col not in {"Labels", "Time"}}
         return support
 
     def transpose_for_scores(self, input_tensor):
@@ -479,8 +472,7 @@ class RGTAN(nn.Module):
         # self.pn = PairNorm(mode=pairnorm)
         if n2v_feat:
             self.n2v_mlp = TransEmbedding(
-                ref_df, device=device, in_feats_dim=in_feats, cat_features=cat_features,
-                                neigh_features=neigh_features, att_head_num=nei_att_head)
+                ref_df, device=device, in_feats_dim=in_feats, cat_features=cat_features, neigh_features=neigh_features, att_head_num=nei_att_head)
             self.nei_feat_dim = len(neigh_features.keys()) if isinstance(
                 neigh_features, dict) else 0
         else:
@@ -541,7 +533,6 @@ class RGTAN(nn.Module):
             h = features
         else:
             cat_h, nei_h = self.n2v_mlp(n2v_feat, neighstat_feat)
-            
             h = features + cat_h
             if isinstance(nei_h, torch.Tensor):
                 h = torch.cat([h, nei_h], dim=-1)

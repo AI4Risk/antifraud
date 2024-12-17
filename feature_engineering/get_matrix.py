@@ -13,7 +13,7 @@ def create_adjacency_matrix(adj_list, n):
     return adj_matrix
 
 def block_matrix_multiply(A, B, block_size, device):
-    
+
     n = A.shape[0]
     C = torch.zeros((n, n), device=device)
     for i in range(0, n, block_size):
@@ -37,7 +37,7 @@ def matrix_powers_gpu(adj_list, n, block_size, matrix_prefix):
     adj_matrix = torch.from_numpy(adj_matrix_np).float().to(device)
     file_name = f'{matrix_prefix}1.pkl'
     with open(file_name,'wb') as f:
-        pickle.dump(adj_matrix_np,f)
+        pickle.dump(adj_matrix_np,f,protocol = 4)
     for k in range(2, 11):
         result_blocks = []
 
@@ -60,9 +60,9 @@ def matrix_powers_gpu(adj_list, n, block_size, matrix_prefix):
                     for _ in range(k - 1):
                         A_k_minus_1_block = block_matrix_multiply(A_k_minus_1_block, adj_block, block_size, device)
                     A_k_minus_1_block[A_k_minus_1_block != 0] = 1
-
+                
                 result_block = A_k_block - A_k_minus_1_block
-
+                # print(torch.where(result_block==-1))
 
                 if i == j:
                     result_block += torch.eye(*block_shape, device=device)
@@ -77,7 +77,7 @@ def matrix_powers_gpu(adj_list, n, block_size, matrix_prefix):
         # Save the result immediately
         file_name = f'{matrix_prefix}{k}.pkl'
         with open(file_name, 'wb') as file:
-            pickle.dump(full_result, file)
+            pickle.dump(full_result, file,protocol = 4)
 
         # Clear memory
         torch.cuda.empty_cache()
@@ -100,6 +100,8 @@ if __name__ == '__main__':
 
         with open(filepath, 'rb') as file:
             relation1 = pickle.load(file)
+        # if filename.startswith('amz') or filename.startswith('yelp_rsr'):
+        #     continue
         
         block_size = 1493 if filename.startswith('amz') else 7659
         matrix_powers_gpu(relation1,len(relation1),block_size,matrix_prefix)

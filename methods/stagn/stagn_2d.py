@@ -175,45 +175,29 @@ class stagn_2d_model(nn.Module):
 
     def forward(self, X_nume, g):
         # X shape be like: (batch_size, time_windows_dim, feat_dim)
-        # print(g.ndata['feat'].shape) # torch.Size([5021, 251]) 
-        # print(g.edata['feat'].shape) # torch.Size([29643, 251])
+        print(g.ndata['feat'].shape, g.edata['feat'].shape)
+        # torch.Size([5021, 251]) torch.Size([29643, 251])
         node_embs, edge_embs = self.gcn(g, g.ndata['feat'], g.edata['feat'])
-        # print(edge_embs.shape) # torch.Size([29643, 8])
+        print(edge_embs.shape) # torch.Size([29643, 8])
         src_nds, dst_nds = g.edges()
         src_feat = g.ndata['h'][src_nds]
         dst_feat = g.ndata['h'][dst_nds]
         # all, 3, embedding_dim
         node_feats = torch.stack(
             [src_feat, dst_feat, edge_embs], dim=1).view(X_nume.shape[0], -1)
-        # print(X_nume.shape) # torch.Size([29643, 8, 5]) 
-        # print(node_feats.shape) # torch.Size([29643, 24])
+        print(X_nume.shape, node_feats.shape)
+        # torch.Size([29643, 8, 5]) torch.Size([29643, 24])
         out = self.attention_layer(X_nume)  # all, 1, 8, 10
-        # print(out.shape) # torch.Size([29643, 1, 8, 10])
+        print(out.shape)
         out = self.cnn_layer(out)  # all, 64, 8, 10
-        # print(out.shape) # torch.Size([29643, 64, 8, 10])
+        print(out.shape)
         out = self.flatten(out)
-        # print(out.shape) # torch.Size([29643, 5120])
+        print(out.shape)
         out = self.linears1(out)
-        # print(out.shape) # torch.Size([29643, 24])
+        print(out.shape)
         out = torch.cat([out, node_feats], dim=1)
-        # print(out.shape) # torch.Size([29643, 48])
+        print(out.shape)
         out = self.linears2(out)
-        # print(out.shape) # torch.Size([29643, 2])
+        print(out.shape)
 
         return out
-
-        # g -> gcn_layer -> [batch, 8] 
-        #-> stack -> G_out=[batch, 24]
-        
-        # gcn detail:
-        # [node,251] --graph_trans-> [node,128] --graph_trans-> [node,8]
-        # [edge,251] --lin1-> [edge,128] --graph_trans-> --lin2-> [edge,8]
-        
-        #input=[batch, 8, 5]   -> attention_layer
-        #-> [batch, 1, 8, 10]  -> cnn_layer
-        #-> [batch, 64, 8, 10] -> flatten
-        #-> [batch, 5120]      -> linears1
-        #-> [batch, 24]+G_out  -> cat
-        #-> [batch, 48]        -> linears2
-        #-> [batch, 2]
-        

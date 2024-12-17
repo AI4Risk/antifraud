@@ -22,7 +22,6 @@ from .rgtan_model import RGTAN
 
 def rgtan_main(feat_df, graph, train_idx, test_idx, labels, args, cat_features, neigh_features: pd.DataFrame, nei_att_head):
     # torch.autograd.set_detect_anomaly(True)
-    print(cat_features)
     device = args['device']
     graph = graph.to(device)
     oof_predictions = torch.from_numpy(
@@ -104,6 +103,7 @@ def rgtan_main(feat_df, graph, train_idx, test_idx, labels, args, cat_features, 
                 # print(f"loading batch data...")
                 batch_inputs, batch_work_inputs, batch_neighstat_inputs, batch_labels, lpa_labels = load_lpa_subtensor(num_feat, cat_feat, nei_feat, neigh_padding_dict, labels,
                                                                                                                        seeds, input_nodes, device, blocks)
+
                 # print(f"load {step}")
 
                 # batch_neighstat_inputs: {"degree":(|batch|, degree_dim)}
@@ -111,18 +111,21 @@ def rgtan_main(feat_df, graph, train_idx, test_idx, labels, args, cat_features, 
                 blocks = [block.to(device) for block in blocks]
                 train_batch_logits = model(
                     blocks, batch_inputs, lpa_labels, batch_work_inputs, batch_neighstat_inputs)
+
                 mask = batch_labels == 2
                 train_batch_logits = train_batch_logits[~mask]
                 batch_labels = batch_labels[~mask]
                 # batch_labels[mask] = 0
 
                 train_loss = loss_fn(train_batch_logits, batch_labels)
+
                 # backward
                 optimizer.zero_grad()
                 train_loss.backward()
                 optimizer.step()
                 lr_scheduler.step()
                 train_loss_list.append(train_loss.cpu().detach().numpy())
+
 
                 if step % 10 == 0:
                     tr_batch_pred = torch.sum(torch.argmax(train_batch_logits.clone(
@@ -234,15 +237,19 @@ def rgtan_main(feat_df, graph, train_idx, test_idx, labels, args, cat_features, 
     test_score = test_score[mask]
     y_target = y_target[mask]
     test_score1 = test_score1[mask]
-
+    
     print("test AUC:", roc_auc_score(y_target, test_score))
     print("test f1:", f1_score(y_target, test_score1, average="macro"))
     print("test AP:", average_precision_score(y_target, test_score))
 
 
-def loda_rgtan_data(dataset: str, test_size: float):
+def loda_rgtan_data(dataset: str, test_size: float, neigh_features_modi: bool):
     # prefix = "./antifraud/data/"
     prefix = "data/"
+    if neigh_features_modi:
+        suffix = "_modi"
+    else:
+        suffix = ""
     if dataset == 'S-FFSD':
         cat_features = ["Target", "Location", "Type"]
 
@@ -295,7 +302,7 @@ def loda_rgtan_data(dataset: str, test_size: float):
         train_idx, test_idx, y_train, y_test = train_test_split(index, labels, stratify=labels, test_size=0.6,
                                                                 random_state=2, shuffle=True)
         feat_neigh = pd.read_csv(
-            prefix + "S-FFSD_neigh_feat.csv")
+            prefix + "S-FFSD_neigh_feat"+suffix+".csv")
         print("neighborhood feature loaded for nn input.")
         neigh_features = feat_neigh
 
@@ -329,7 +336,7 @@ def loda_rgtan_data(dataset: str, test_size: float):
 
         try:
             feat_neigh = pd.read_csv(
-                prefix + "yelp_neigh_feat.csv")
+                prefix + "yelp_neigh_feat"+suffix+".csv")
             print("neighborhood feature loaded for nn input.")
             neigh_features = feat_neigh
         except:
@@ -364,7 +371,7 @@ def loda_rgtan_data(dataset: str, test_size: float):
         dgl.data.utils.save_graphs(graph_path, [g])
         try:
             feat_neigh = pd.read_csv(
-                prefix + "amazon_neigh_feat.csv")
+                prefix + "amazon_neigh_feat"+suffix+".csv")
             print("neighborhood feature loaded for nn input.")
             neigh_features = feat_neigh
         except:

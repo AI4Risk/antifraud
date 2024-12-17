@@ -7,6 +7,7 @@ from .hogrl_utils import *
 import numpy as np
 import random as rd
 from sklearn.metrics import f1_score, accuracy_score, recall_score, roc_auc_score, average_precision_score
+from torch.cuda.amp import autocast as autocast
 
 def test(idx_eval, y_eval, gnn_model, feat_data, edge_indexs):
     gnn_model.eval()
@@ -22,7 +23,7 @@ def test(idx_eval, y_eval, gnn_model, feat_data, edge_indexs):
     return auc_score, ap_score, f1_score_val, g_mean
 
 def hogrl_main(args):
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device(args['device'] if torch.cuda.is_available() else 'cpu')
     print(device)
     print('loading data...')
     prefix = os.path.join(os.path.dirname(__file__), "..", "..", "data/")
@@ -49,10 +50,12 @@ def hogrl_main(args):
     for edge_index in edge_indexs:
         edge_index[0] = edge_index[0].to(device)
         edge_index[1] = [tensor.to(device) for tensor in edge_index[1]]
-            
     # labels = torch.tensor(labels).to(device)
     feat_data = torch.tensor(feat_data).float().to(device)
-
+    print(f"Memory allocated: {torch.cuda.memory_allocated(device=device) / 1024**2:.2f} MB")
+    print(f"Memory reserved: {torch.cuda.memory_reserved(device=device) / 1024**2:.2f} MB")
+    # Memory allocated: 20273.85 MB
+    # Memory reserved: 20302.00 MB
     optimizer = torch.optim.Adam(gnn_model.parameters(), lr=0.005, weight_decay=5e-5)
     batch_size = args['batch_size']
     
@@ -85,6 +88,12 @@ def hogrl_main(args):
             #print(loss.item())
 
         if epoch % 10 == 9: # validate every 10 epochs 
+            
+            # print(f"Memory allocated: {torch.cuda.memory_allocated(device=device) / 1024**2:.2f} MB")
+            # print(f"Memory reserved: {torch.cuda.memory_reserved(device=device) / 1024**2:.2f} MB")
+            train_auc, train_ap, train_f1, train_g_mean = test(idx_train, y_train, gnn_model, feat_data, edge_indexs)
+            print(f'Epoch: {epoch}, Train AUC: {train_auc:.4f}, Train AP: {train_ap:.4f}, Train F1: {train_f1:.4f}, Train G-mean: {train_g_mean:.4f}')
+
             val_auc, val_ap, val_f1, val_g_mean = test(idx_val, y_val, gnn_model, feat_data, edge_indexs)
             print(f'Epoch: {epoch}, Val AUC: {val_auc:.4f}, Val AP: {val_ap:.4f}, Val F1: {val_f1:.4f}, Val G-mean: {val_g_mean:.4f}')
             
@@ -97,6 +106,8 @@ def hogrl_main(args):
     test_auc, test_ap, test_f1, test_g_mean = test(idx_test, y_test, gnn_model, feat_data, edge_indexs)
     print(f'Test AUC: {test_auc:.4f}, Test AP: {test_ap:.4f}, '
         f'Test F1: {test_f1:.4f}, Test G-mean: {test_g_mean:.4f}')
+    print(f"Memory allocated: {torch.cuda.memory_allocated(device=device) / 1024**2:.2f} MB")
+    print(f"Memory reserved: {torch.cuda.memory_reserved(device=device) / 1024**2:.2f} MB")
 
     out,embedding = gnn_model(feat_data,edge_indexs)
     
