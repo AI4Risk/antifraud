@@ -62,7 +62,7 @@ def matrix_powers_gpu(adj_list, n, block_size, matrix_prefix):
                     A_k_minus_1_block[A_k_minus_1_block != 0] = 1
 
                 result_block = A_k_block - A_k_minus_1_block
-
+                result_block =  torch.maximum(result_block,torch.tensor(0))
 
                 if i == j:
                     result_block += torch.eye(*block_shape, device=device)
