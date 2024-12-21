@@ -73,7 +73,7 @@ def gtan_main(feat_df, graph, train_idx, test_idx, labels, args, cat_features):
                                drop=args['dropout'],
                                device=device,
                                gated=args['gated'],
-                               ref_df=feat_df.iloc[train_idx],
+                               ref_df=feat_df,
                                cat_features=cat_feat).to(device)
         lr = args['lr'] * np.sqrt(args['batch_size']/1024)  # 0.00075
         optimizer = optim.Adam(model.parameters(), lr=lr,
