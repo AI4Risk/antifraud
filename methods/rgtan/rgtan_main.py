@@ -82,7 +82,7 @@ def rgtan_main(feat_df, graph, train_idx, test_idx, labels, args, cat_features, 
                       drop=args['dropout'],
                       device=device,
                       gated=args['gated'],
-                      ref_df=feat_df.iloc[train_idx],
+                      ref_df=feat_df,
                       cat_features=cat_feat,
                       neigh_features=nei_feat,
                       nei_att_head=nei_att_head).to(device)
