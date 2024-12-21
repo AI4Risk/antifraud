@@ -87,7 +87,7 @@ def stagn_main(
     device="cpu",
 ):
     train_idx, test_idx = train_test_split(
-        np.arange(features.shape[0]), test_size=test_ratio)
+        np.arange(features.shape[0]), test_size=test_ratio, stratify=labels)
 
     # y_pred = np.zeros(shape=test_label.shape)
     if mode == "2d":
