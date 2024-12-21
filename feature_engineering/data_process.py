@@ -131,7 +131,7 @@ def k_neighs(
         elif where == "out":
             subg_out = dgl.khop_out_subgraph(
                 graph, center_idx, 2, store_ids=True)[0]
-            neigh_idxs = subg_out.ndata[dgl.NID][subg_in.ndata[dgl.NID] != center_idx]
+            neigh_idxs = subg_out.ndata[dgl.NID][subg_out.ndata[dgl.NID] != center_idx]
             neigh1s = graph.successors(center_idx)
             neigh_idxs = neigh_idxs[~torch.isin(neigh_idxs, neigh1s)]
 
