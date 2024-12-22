@@ -354,3 +354,15 @@ class GraphAttnModel(nn.Module):
         logits = self.layers[-1](h)
 
         return logits
+        # a.attribute_embedding:
+        # {'Target'[batch],'Location'[batch],'Type'[batch]} -> as index lookup_table
+        # {'Target'[batch,126],'Location'[batch,126],'Type'[batch,126]}-> drop+mlp+ensemble ->
+        # [batch,126] -> add_input -> [batch,126] --linear2-> h'[batch,256]
+        # label[batch] --embedding-> [batch, 126] --linear1-> label_embed'[batch,256]
+        # b.GTAN(1)
+        # label_embed' --resnet---> h'' [batch,256] 
+        #               |-------|
+        # b.GTAN(2)
+        #  h_1''--attention_on_graph+gate-> h_2'' --attention_on_graph+gate-> h_3''[batch3,256]
+        # batch1:2274 ->              batch2: 669 ->             batch3:128(in config)
+        # -> mlp -> logits[batch3,2]

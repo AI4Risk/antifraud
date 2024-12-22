@@ -201,3 +201,18 @@ class stagn_2d_model(nn.Module):
         print(out.shape)
 
         return out
+        # g -> gcn_layer -> [batch, 8] 
+        #-> stack -> G_out=[batch, 24]
+        
+        # gcn detail:
+        # [node,251] --graph_trans-> [node,128] --graph_trans-> [node,8]
+        # [edge,251] --lin1-> [edge,128] --graph_trans-> --lin2-> [edge,8]
+        
+        #input=[batch, 8, 5]   -> attention_layer
+        #-> [batch, 1, 8, 10]  -> cnn_layer
+        #-> [batch, 64, 8, 10] -> flatten
+        #-> [batch, 5120]      -> linears1
+        #-> [batch, 24]+G_out  -> cat
+        #-> [batch, 48]        -> linears2
+        #-> [batch, 2]
+        

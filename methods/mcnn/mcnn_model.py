@@ -36,9 +36,20 @@ class mcnn(nn.Module):
             nn.LazyLinear(out_features=2)
         )
 
+
     def forward(self, x: torch.Tensor):
-        # x shape be like: (batch_size, time_windows_dim, feat_dim)
+        # x shape be like: (batch_size, time_windows_dim, feat_dim) 
         x_ = F.relu(self.conv1(x.unsqueeze(1)))
         x_ = self.flatten(self.maxpool1(self.conv2(x_)))
         logits = self.linears(x_)
         return logits
+    
+
+        #  (batch_size,8,5)   ->unsqueeze(1) 
+        #->(batch_size,1,8,5) ->conv1->relu
+        #->(batch_size,32,7,4)->conv2
+        #->(batch_size,64,6,3)->maxpool1
+        #->(batch_size,64,3,1)->flatten->fc1->relu
+        #->(batch_size,128)   ->fc2->relu
+        #->(batch_size,64)    ->fc3->
+        #->(batch_size,2)
