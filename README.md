@@ -8,7 +8,7 @@ Source codes implementation of papers:
 - `STAGN`: Graph Neural Network for Fraud Detection via Spatial-temporal Attention, published in [TKDE 2020](https://ieeexplore.ieee.org/abstract/document/9204584/)
 - `GTAN`: Semi-supervised Credit Card Fraud Detection via Attribute-driven Graph Representation, published in [AAAI 2023](https://ojs.aaai.org/index.php/AAAI/article/view/26702).
 - `RGTAN`: Enhancing Attribute-driven Fraud Detection with Risk-aware Graph Representation.
-- `HOGRL`: Effective High-order Graph Representation Learning for Credit Card Fraud Detection, published in [IJCAI 20224](https://www.ijcai.org/proceedings/2024/0839.pdf).
+- `HOGRL`: Effective High-order Graph Representation Learning for Credit Card Fraud Detection, published in [IJCAI 2024](https://www.ijcai.org/proceedings/2024/0839.pdf).
 
 
 
