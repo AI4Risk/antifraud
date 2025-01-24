@@ -3,12 +3,12 @@
 A Financial Fraud Detection Framework.
 
 Source codes implementation of papers:
-- `MCNN`: Credit card fraud detection using convolutional neural networks, in ICONIP 2016. 
-- `STAN`: Spatio-temporal attention-based neural network for credit card fraud detection, in AAAI2020
-- `STAGN`: Graph Neural Network for Fraud Detection via Spatial-temporal Attention, in TKDE2020
-- `GTAN`: Semi-supervised Credit Card Fraud Detection via Attribute-driven Graph Representation, in AAAI2023
-- `RGTAN`: Enhancing Attribute-driven Fraud Detection with Risk-aware Graph Representation, 
-- `HOGRL`: Effective High-order Graph Representation Learning for Credit Card Fraud Detection, 
+- `MCNN`: Credit card fraud detection using convolutional neural networks, published in [ICONIP 2016](https://link.springer.com/chapter/10.1007/978-3-319-46675-0_53). 
+- `STAN`: Spatio-temporal attention-based neural network for credit card fraud detection, published in [AAAI 2020](https://ojs.aaai.org/index.php/AAAI/article/view/5371).
+- `STAGN`: Graph Neural Network for Fraud Detection via Spatial-temporal Attention, published in [TKDE 2020](https://ieeexplore.ieee.org/abstract/document/9204584/)
+- `GTAN`: Semi-supervised Credit Card Fraud Detection via Attribute-driven Graph Representation, published in [AAAI 2023](https://ojs.aaai.org/index.php/AAAI/article/view/26702).
+- `RGTAN`: Enhancing Attribute-driven Fraud Detection with Risk-aware Graph Representation.
+- `HOGRL`: Effective High-order Graph Representation Learning for Credit Card Fraud Detection, published in [IJCAI 20224](https://www.ijcai.org/proceedings/2024/0839.pdf).
 
 
 
