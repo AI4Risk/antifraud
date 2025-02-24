@@ -7,7 +7,7 @@ Source codes implementation of papers:
 - `STAN`: Spatio-temporal attention-based neural network for credit card fraud detection, published in [AAAI 2020](https://ojs.aaai.org/index.php/AAAI/article/view/5371).
 - `STAGN`: Graph Neural Network for Fraud Detection via Spatial-temporal Attention, published in [TKDE 2020](https://ieeexplore.ieee.org/abstract/document/9204584/)
 - `GTAN`: Semi-supervised Credit Card Fraud Detection via Attribute-driven Graph Representation, published in [AAAI 2023](https://ojs.aaai.org/index.php/AAAI/article/view/26702).
-- `RGTAN`: Enhancing Attribute-driven Fraud Detection with Risk-aware Graph Representation.
+- `RGTAN`: Enhancing Attribute-driven Fraud Detection with Risk-aware Graph Representation, published in [TKDE 2025](https://ieeexplore.ieee.org/document/10896835)
 - `HOGRL`: Effective High-order Graph Representation Learning for Credit Card Fraud Detection, published in [IJCAI 2024](https://www.ijcai.org/proceedings/2024/0839.pdf).
 
 
@@ -129,6 +129,14 @@ If you find *Antifraud* is useful for your research, please consider citing the 
       author={Zou, Yao and Cheng, Dawei},
       booktitle={International Joint Conference on Artificial Intelligence},
       year={2024}
+    }
+    @ARTICLE{xiang2025enhancing,
+      author={Xiang, Sheng and Zhang, Guibin and Cheng, Dawei and Zhang, Ying},
+      journal={IEEE Transactions on Knowledge and Data Engineering}, 
+      title={Enhancing Attribute-Driven Fraud Detection With Risk-Aware Graph Representation}, 
+      year={2025},
+      pages={1-12},
+      doi={10.1109/TKDE.2025.3543887}
     }
     @inproceedings{Xiang2023SemiSupervisedCC,
         title={Semi-supervised Credit Card Fraud Detection via Attribute-driven Graph Representation},
