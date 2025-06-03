@@ -1,59 +1,79 @@
 # Grad: Guided Relation Diffusion Generation for Graph Augmentation in Graph Fraud Detection
 
-[Grad: Guided Relation Diffusion Generation for Graph Augmentation in Graph Fraud Detection (acm.org)](https://dl.acm.org/doi/pdf/10.1145/3696410.3714520)
+[Grad: Guided Relation Diffusion Generation for Graph Augmentation in Graph Fraud Detection | Proceedings of the ACM on Web Conference 2025](https://dl.acm.org/doi/abs/10.1145/3696410.3714520)
+
+
+
+Several generation results of amazon and yelp can be find in https://huggingface.co/Muyiiiii-HF/WWW25-Grad/tree/main .
+
+
 
 ## Requirements
 
 This code requires the following:
 
 - python==3.9
+
 - pytorch==1.12.1+cu113
 
   - ```
     pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu113
     ```
+
   - ```
     pip uninstall numpy
     ```
+
   - ```
     pip install numpy==1.26.0
     ```
+
 - dgl==0.9.1+cu113
 
   - ```
     pip install dgl-cu113 -f https://data.dgl.ai/wheels/repo.html
     ```
+
 - pygcl
 
   - ```
     pip install PyGCL
     ```
+
 - mpi4py
 
   - ```
     conda install mpi4py
     ```
+
   - or
+
   - ```
     pip install mpi4py
     ```
+
 - if error in pip
 
   - ```
     apt-get update
     ```
+
   - ```
     apt-get install mpich
     ```
+
   - ```
     pip install mpi4py
     ```
+
 - torch_geometric==2.2.0
+
 - improved-diffusion
 
   - ```
     cd models
     ```
+
   - ```
     pip install -e .
     ```
@@ -165,6 +185,7 @@ class argVar:
    ```python
    self.GuiDDPM_train_flag=True
    ```
+
    ```
    python generation_main.py
    ```
@@ -174,13 +195,14 @@ class argVar:
    ```python
    self.GuiDDPM_train_flag=False
    ```
+
    ```
    python generation_main.py
    ```
 
 3. **Detection**
 
-   Several generation results of Amazon and Yelp can be found in https://huggingface.co/Muyiiiii-HF/WWW25-Grad/tree/main .
+   Several generation results of amazon and yelp can be find in https://huggingface.co/Muyiiiii-HF/WWW25-Grad/tree/main .
 
    ```
    python detect_main.py
