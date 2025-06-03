@@ -180,7 +180,7 @@ class argVar:
 
 3. **Detection**
 
-   ==Several generation results of Amazon and Yelp can be found in https://huggingface.co/Muyiiiii-HF/WWW25-Grad/tree/main .==
+   Several generation results of Amazon and Yelp can be found in https://huggingface.co/Muyiiiii-HF/WWW25-Grad/tree/main .
 
    ```
    python detect_main.py
