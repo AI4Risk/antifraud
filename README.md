@@ -9,15 +9,19 @@ Source codes implementation of papers:
 - `GTAN`: Semi-supervised Credit Card Fraud Detection via Attribute-driven Graph Representation, published in [AAAI 2023](https://ojs.aaai.org/index.php/AAAI/article/view/26702).
 - `RGTAN`: Enhancing Attribute-driven Fraud Detection with Risk-aware Graph Representation, published in [TKDE 2025](https://ieeexplore.ieee.org/document/10896835)
 - `HOGRL`: Effective High-order Graph Representation Learning for Credit Card Fraud Detection, published in [IJCAI 2024](https://arxiv.org/pdf/2503.01556).
+- `Grad`: Grad: Guided Relation Diffusion Generation for Graph Augmentation in Graph Fraud Detection in [WWW 2025](https://dl.acm.org/doi/abs/10.1145/3696410.3714520).
 
 
 
 ## Usage
 
 ### Data processing
+
 1. Run `unzip /data/Amazon.zip` and `unzip /data/YelpChi.zip` to unzip the datasets; 
 2. Run `python feature_engineering/data_process.py` to pre-process all datasets needed in this repo.
 3. Run `python feature_engineering/get_matrix.py` to generate the adjacency matrix of the high-order transaction graph.Please note that this will require approximately 280GB of storage space. Please be aware that if you intend to run `HOGRL` , you should first execute the `get_matrix.py` script.
+
+> `Grad` is run on the DGL's `Amazon` and `Yelp` dataset.
 
 ### Training & Evalutaion
 <!-- 
@@ -29,6 +33,8 @@ python main.py  --method GBDT
 ```
 You may change relevant configurations in `config/base_cfg.yaml`. -->
 
+
+
 To test implementations of `MCNN`, `STAN` and `STAGN`, run
 ```
 python main.py --method mcnn
@@ -37,6 +43,8 @@ python main.py --method stagn
 ```
 Configuration files can be found in `config/mcnn_cfg.yaml`, `config/stan_cfg.yaml` and `config/stagn_cfg.yaml`, respectively.
 
+
+
 Models in `GTAN` and `RGTAN` can be run via:
 ```
 python main.py --method gtan
@@ -44,12 +52,19 @@ python main.py --method rgtan
 ```
 For specification of hyperparameters, please refer to `config/gtan_cfg.yaml` and `config/rgtan_cfg.yaml`.
 
+
+
 Model in `HOGRL` can be run via:
 
 ```
 python main.py --method hogrl
 ```
 For specification of hyperparameters, please refer to `config/hogrl_cfg.yaml`.
+
+
+
+To run the `Grad`, please read the [README of Grad](./methods/grad/README.md), including the environments and pipelines.
+
 
 
 ### Data Description
@@ -87,10 +102,11 @@ The performance of five models tested on three datasets are listed as follows:
 |GTAN|0.9241|0.7988|0.7513|0.9630|0.9213|0.8838|0.8286|0.7336|0.6585|
 |RGTAN|0.9498|0.8492|0.8241|0.9750|0.9200|0.8926|0.8461|0.7513|0.6939|
 |HOGRL|0.9808|0.8595|-|0.9800|0.9198|-|-|-|-|
+|Grad|0.9908|-|0.9644|0.9789|-|0.8968|-|-|-|
 
-> `MCNN`, `STAN` and `STAGN` are presently not applicable to YelpChi and Amazon datasets.
+> `MCNN`, `STAN`, `Grad` and `STAGN` are presently not applicable to YelpChi and Amazon datasets.
 >
-> `HOGRL` is presently not applicable to S-FFSD dataset.
+> `HOGRL` and `Grad` are presently not applicable to S-FFSD dataset.
 
 ## Repo Structure
 The repository is organized as follows:
@@ -124,6 +140,13 @@ dgl-cu113        0.8.1
 
 If you find *Antifraud* is useful for your research, please consider citing the following papers:
     
+    @inproceedings{yang2025grad,
+      title={Grad: Guided relation diffusion generation for graph augmentation in graph fraud detection},
+      author={Yang, Jie and Zhang, Rui and Cheng, Ziyang and Cheng, Dawei and Yang, Guang and Wang, Bo},
+      booktitle={Proceedings of the ACM on Web Conference 2025},
+      pages={5308--5319},
+      year={2025}
+    }
     @inproceedings{zou2024effective,
       title={Effective High-order Graph Representation Learning for Credit Card Fraud Detection.},
       author={Zou, Yao and Cheng, Dawei},
