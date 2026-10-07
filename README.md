@@ -1,21 +1,53 @@
-# AntiFraud
+<h1 align="center">AntiFraud</h1>
+<p align="center">
+  <a href="https://github.com/AI4Risk/antifraud/stargazers"><img src="https://img.shields.io/github/stars/AI4Risk/antifraud?style=flat-square" alt="GitHub stars"></a>
+  <a href="https://github.com/AI4Risk/antifraud/network/members"><img src="https://img.shields.io/github/forks/AI4Risk/antifraud?style=flat-square" alt="GitHub forks"></a>
+  <a href="https://github.com/AI4Risk/antifraud/blob/main/LICENSE"><img src="https://img.shields.io/github/license/AI4Risk/antifraud?style=flat-square" alt="License"></a>
+  <img src="https://img.shields.io/badge/Python-3.7%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.7 or later">
+</p>
 
-A Financial Fraud Detection Framework.
+<p>
+  <b>A unified research framework for financial fraud detection.</b> Implementations of representative deep learning and graph-based fraud detection methods, with unified data processing, training, and evaluation pipelines.
+</p>
 
-Source codes implementation of papers:
-- `MCNN`: Credit card fraud detection using convolutional neural networks, published in [ICONIP 2016](https://link.springer.com/chapter/10.1007/978-3-319-46675-0_53). 
-- `STAN`: Spatio-temporal attention-based neural network for credit card fraud detection, published in [AAAI 2020](https://ojs.aaai.org/index.php/AAAI/article/view/5371).
-- `STAGN`: Graph Neural Network for Fraud Detection via Spatial-temporal Attention, published in [TKDE 2020](https://ieeexplore.ieee.org/abstract/document/9204584/)
-- `GTAN`: Semi-supervised Credit Card Fraud Detection via Attribute-driven Graph Representation, published in [AAAI 2023](https://ojs.aaai.org/index.php/AAAI/article/view/26702).
-- `RGTAN`: Enhancing Attribute-driven Fraud Detection with Risk-aware Graph Representation, published in [TKDE 2025](https://ieeexplore.ieee.org/document/10896835)
-- `HOGRL`: Effective High-order Graph Representation Learning for Credit Card Fraud Detection, published in [IJCAI 2024](https://arxiv.org/pdf/2503.01556).
+<p align="center">
+  <a href="#antifraud-methods">🔬 Methods</a> ·
+  <a href="#antifraud-usage">🚀 Usage</a> ·
+  <a href="#antifraud-datasets">🗃️ Datasets</a> ·
+  <a href="#antifraud-results">📊 Results</a> ·
+  <a href="#antifraud-repository">🗂️ Repository</a> ·
+  <a href="#antifraud-citation">📚 Citation</a>
+</p>
+
+<a name="antifraud-methods"></a>
+## 🔬 Implemented Methods
+
+AntiFraud provides implementations of representative financial fraud detection methods spanning convolutional, spatio-temporal, graph-based, and graph augmentation approaches.
+- `MCNN`: Credit card fraud detection using convolutional neural networks in [ICONIP 2016](https://link.springer.com/chapter/10.1007/978-3-319-46675-0_53). 
+- `STAN`: Spatio-temporal attention-based neural network for credit card fraud detection in [AAAI 2020](https://ojs.aaai.org/index.php/AAAI/article/view/5371).
+- `STAGN`: Graph Neural Network for Fraud Detection via Spatial-temporal Attention in [TKDE 2020](https://ieeexplore.ieee.org/abstract/document/9204584/)
+- `GTAN`: Semi-supervised Credit Card Fraud Detection via Attribute-driven Graph Representation in [AAAI 2023](https://ojs.aaai.org/index.php/AAAI/article/view/26702).
+- `RGTAN`: Enhancing Attribute-driven Fraud Detection with Risk-aware Graph Representation in [TKDE 2025](https://ieeexplore.ieee.org/document/10896835)
+- `HOGRL`: Effective High-order Graph Representation Learning for Credit Card Fraud Detection in [IJCAI 2024](https://arxiv.org/pdf/2503.01556).
 - `Grad`: Grad: Guided Relation Diffusion Generation for Graph Augmentation in Graph Fraud Detection in [WWW 2025](https://dl.acm.org/doi/abs/10.1145/3696410.3714520).
 
 
+<a name="antifraud-usage"></a>
+## 🚀 Usage
 
-## Usage
+### 📦 Requirements
+```
+python           3.7
+scikit-learn     1.0.2
+pandas           1.3.5
+numpy            1.21.6
+networkx         2.6.3
+scipy            1.7.3
+torch            1.12.1+cu113
+dgl-cu113        0.8.1
+```
 
-### Data processing
+### 📥 Data processing
 
 1. Run `unzip /data/Amazon.zip` and `unzip /data/YelpChi.zip` to unzip the datasets; 
 2. Run `python feature_engineering/data_process.py` to pre-process all datasets needed in this repo.
@@ -23,7 +55,7 @@ Source codes implementation of papers:
 
 > `Grad` is run on the DGL's `Amazon` and `Yelp` dataset.
 
-### Training & Evalutaion
+### 🧠 Training & Evalutaion
 <!-- 
 To use fraud detection baselines including GBDT, LSTM, etc., simply run
 
@@ -33,8 +65,6 @@ python main.py  --method GBDT
 ```
 You may change relevant configurations in `config/base_cfg.yaml`. -->
 
-
-
 To test implementations of `MCNN`, `STAN` and `STAGN`, run
 ```
 python main.py --method mcnn
@@ -43,16 +73,12 @@ python main.py --method stagn
 ```
 Configuration files can be found in `config/mcnn_cfg.yaml`, `config/stan_cfg.yaml` and `config/stagn_cfg.yaml`, respectively.
 
-
-
 Models in `GTAN` and `RGTAN` can be run via:
 ```
 python main.py --method gtan
 python main.py --method rgtan
 ```
 For specification of hyperparameters, please refer to `config/gtan_cfg.yaml` and `config/rgtan_cfg.yaml`.
-
-
 
 Model in `HOGRL` can be run via:
 
@@ -61,13 +87,10 @@ python main.py --method hogrl
 ```
 For specification of hyperparameters, please refer to `config/hogrl_cfg.yaml`.
 
-
-
 To run the `Grad`, please read the [README of Grad](./methods/grad/README.md), including the environments and pipelines.
 
-
-
-### Data Description
+<a name="antifraud-datasets"></a>
+## 🗃️ Datasets
 
 There are three datasets, YelpChi, Amazon and S-FFSD, utilized for model experiments in this repository.
 
@@ -91,7 +114,8 @@ S-FFSD is a simulated & small version of finacial fraud semi-supervised dataset.
 
 > We are looking for interesting public datasets! If you have any suggestions, please let us know!
 
-## Test Result
+<a name="antifraud-results"></a>
+## 📊 Results
 The performance of five models tested on three datasets are listed as follows:
 | |YelpChi| | |Amazon| | |S-FFSD| | |
 |:----|:----|:----|:----|:----|:----|:----|:----|:----|:----|
@@ -104,39 +128,32 @@ The performance of five models tested on three datasets are listed as follows:
 |HOGRL|0.9808|0.8595|-|0.9800|0.9198|-|-|-|-|
 |Grad|0.9908|-|0.9644|0.9789|-|0.8968|-|-|-|
 
-> `MCNN`, `STAN`, `Grad` and `STAGN` are presently not applicable to YelpChi and Amazon datasets.
+> `MCNN`, `STAN` and `STAGN` are presently not applicable to YelpChi and Amazon datasets.
 >
 > `HOGRL` and `Grad` are presently not applicable to S-FFSD dataset.
 
-## Repo Structure
+<a name="antifraud-repository"></a>
+## 🗂️ Repository
 The repository is organized as follows:
-- `models/`: the pre-trained models for each method. The readers could either train the models by themselves or directly use our pre-trained models;
-- `data/`: dataset files;
-- `config/`: configuration files for different models;
-- `feature_engineering/`: data processing;
-- `methods/`: implementations of models;
-- `main.py`: organize all models;
-- `requirements.txt`: package dependencies;
-
-    
-## Requirements
 ```
-python           3.7
-scikit-learn     1.0.2
-pandas           1.3.5
-numpy            1.21.6
-networkx         2.6.3
-scipy            1.7.3
-torch            1.12.1+cu113
-dgl-cu113        0.8.1
+AntiFraud/
+├── config/               # Configuration files for different models
+├── data/                 # Dataset files
+├── feature_engineering/  # Data preprocessing and graph construction
+├── methods/              # Implementations of fraud detection methods
+├── models/               # Pre-trained models for each method
+├── main.py               # Main entry point for model execution
+└── requirements.txt      # Package dependencies
 ```
 
-### Contributors :
+<a name="antifraud-contributors"></a>
+## 🤝 Contributors :
 <a href="https://github.com/AI4Risk/antifraud/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=AI4Risk/antifraud" />
 </a>
 
-### Citing
+<a name="antifraud-citation"></a>
+## 📚 Citation
 
 If you find *Antifraud* is useful for your research, please consider citing the following papers:
     
